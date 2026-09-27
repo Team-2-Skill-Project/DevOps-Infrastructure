@@ -88,6 +88,7 @@ jobs:
           DB_PASSWORD: secret
           REDIS_HOST: 127.0.0.1
           REDIS_PORT: 6379
+          JWT_SECRET: "dummy-jwt-secret-key-32-chars-long!!"
 
   # ─── 2. Frontend Build (React 19 / Vite 6) ───
   frontend-tests:

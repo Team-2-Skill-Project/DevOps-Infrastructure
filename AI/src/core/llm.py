@@ -82,7 +82,7 @@ def get_llm(
 
     raw_model = model if model is not None else (ctx.model_name if ctx else None)
     raw_model = raw_model or llm_settings.model_name
-    effective_provider = provider or (ctx.provider if ctx else None) or llm_settings.provider
+    effective_provider = provider or (ctx.provider if ctx else None)
     parsed_provider, model_name = settings.parse_provider_and_model(raw_model, effective_provider)
     parsed_provider = LLMSettings.validate_provider(parsed_provider)
 
