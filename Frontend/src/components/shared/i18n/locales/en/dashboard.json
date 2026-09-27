@@ -1,0 +1,92 @@
+{
+  "navigation": {
+    "mainMenu": "Main Menu",
+    "dashboard": "Dashboard",
+    "exploreJobs": "Explore Jobs",
+    "savedJobs": "Saved Jobs",
+    "cvManagement": "CV Management",
+    "aiChat": "AI Chat",
+    "roadmap": "Roadmap",
+    "applicationTracker": "Application Tracker"
+  },
+  "actions": {
+    "collapseSidebar": "Collapse Sidebar",
+    "expandSidebar": "Expand Sidebar"
+  },
+  "mentor": {
+    "title": "Need Help?",
+    "description": "Ask AI Mentor for instant career recommendations.",
+    "action": "Start Conversation"
+  },
+  "overview": {
+    "workspace": "Candidate Workspace",
+    "page": "Dashboard",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "subtitle": "Here's where things stand with your job search today.",
+    "quickActions": {
+      "browseJobs": "Browse Jobs",
+      "viewApplications": "View Applications",
+      "savedJobs": "Saved Jobs",
+      "openRoadmap": "Open Roadmap",
+      "askAiMentor": "Ask AI Mentor"
+    },
+    "pipeline": {
+      "title": "Application Pipeline",
+      "weeklyChange": "+2 this week",
+      "description": "Real-time status across active interview loops",
+      "sent": "Sent",
+      "applied": "applied",
+      "inReview": "In Review",
+      "active": "active",
+      "interview": "Interview",
+      "offers": "Offers",
+      "pending": "pending",
+      "round": "round"
+    },
+    "competency": {
+      "title": "Competency Radar",
+      "profileFit": "Profile Fit",
+      "recalibrate": "Recalibrate Target Index"
+    },
+    "recommended": {
+      "title": "Recommended Opportunities",
+      "aiMatched": "AI Matched",
+      "viewAll": "View all matches",
+      "loading": "Still finding matches for you — recommendations improve once your CV finishes processing.",
+      "radarAlignment": "Radar alignment",
+      "bookmark": "Bookmark",
+      "apply": "Apply Now"
+    },
+    "roadmap": {
+      "title": "Career Roadmap",
+      "empty": "No roadmap generated yet — set a target role to get a personalized plan.",
+      "overall": "overall",
+      "open": "Open Roadmap"
+    },
+    "mentorCard": {
+      "title": "AI Mentor",
+      "description": "Not sure what to focus on? Ask your mentor — it knows your profile, jobs, and roadmap.",
+      "action": "Ask AI Mentor"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "view": "View Notifications",
+      "empty": "No new notifications."
+    },
+    "savedJobsCard": {
+      "title": "Saved jobs",
+      "view": "View Saved Jobs",
+      "empty": "You haven't saved any jobs yet."
+    },
+    "skillGaps": {
+      "title": "Priority skill gaps",
+      "openRoadmap": "Open Roadmap",
+      "description": "Ranked by impact on your target role.",
+      "empty": "No skill gaps identified yet."
+    }
+  }
+}

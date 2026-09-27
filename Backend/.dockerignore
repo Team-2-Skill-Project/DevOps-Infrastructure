@@ -1,0 +1,65 @@
+# Version Control (keep git metadata out of the image)
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Secrets & Env files (CRITICAL) 
+.env 
+.env.*
+!.env.example
+*.pem
+*.key 
+auth.json
+
+# Local Dependencies & Package Manager Logs
+/vendor/
+/node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Laravel Runtime Caches, Sessions and Logs
+storage/logs/*
+!storage/logs/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/pail/
+
+# Frontend Dev and Build Artifacts 
+public/hot
+public/storage
+bootstrap/ssr/
+
+# Test & Static Analysis Caches 
+.phpunit.cache 
+.phpunit.result.cache 
+.phpstan.cache/
+
+# IDE, Editor, AI assistant metadata 
+.idea/
+.vscode/
+.fleet/
+.nova/
+.zed/
+.agents/
+.junie/
+.claude/
+.cursor/
+AGENTS.md
+boost.json
+Homestead.json
+Homestead.yaml
+.editorconfig
+.phpactor.json
+
+# Docker & Repo Docs
+Dockerfile* 
+docker-compose* 
+README.md
+
+# OS Junk 
+.DB_Store 
+Thumbs.db 

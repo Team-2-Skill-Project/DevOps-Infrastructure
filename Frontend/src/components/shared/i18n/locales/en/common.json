@@ -1,0 +1,278 @@
+{
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "apply": "test",
+    "signIn": "Sign In",
+    "postJob": "Post a Job"
+  },
+
+  "navigation": {
+    "home": "Home",
+    "jobs": "Jobs",
+    "approach": "Our Approach",
+    "categories": "Categories",
+    "benefits": "Benefits",
+    "getStarted": "Get Started",
+    "applications": "Applications",
+    "roadmap": "Roadmap",
+    "mentor": "AI Mentor",
+    "profile": "Profile"
+  },
+  "home": {
+    "aiMentor": {
+      "badge": "Next-Gen Intelligence",
+      "title": "AI Career Mentor",
+      "description": "Get personalized career guidance, identify skill gaps, build a learning roadmap, and prepare for your next opportunity with AI.",
+      "chips": {
+        "mockInterviews": "Mock Interviews",
+        "resumeGapAnalysis": "Resume Gap Analysis",
+        "skillRoadmap": "Skill Roadmap",
+        "salaryBenchmarking": "Salary Benchmarking"
+      },
+      "action": "Talk to AI Mentor",
+      "availability": "Available 24/7 • Instant Feedback • Free Plan Included"
+    },
+    "hero": {
+      "badge": "AI-POWERED CAREER INTELLIGENCE",
+      "headlinePrefix": "Your skills deserve the right",
+      "headlineHighlight": "opportunity",
+      "description": "Upload your CV once. Our AI maps every skill, matches you to curated jobs, and builds a personalized roadmap to close every gap — with a mentor that never sleeps.",
+      "popular": "Popular:",
+      "jobSearchPlaceholder": "Job title, skills, or company...",
+      "locationPlaceholder": "City, Country or Remote",
+      "clearSearch": "Clear search",
+      "suggestedRoles": "Suggested Roles",
+      "searchJobs": "Search Jobs",
+      "scrollToExplore": "Scroll to Explore"
+    },
+    "metrics": {
+      "activeSeekers": "Active Job Seekers",
+      "partnerCompanies": "Partner Companies",
+      "matchAccuracy": "Match Accuracy",
+      "fasterHiring": "Faster Hiring"
+    },
+    "jobs": {
+      "badge": "Recent Opportunities",
+      "title": "Latest Jobs & Open Roles",
+      "description": "Explore recently published roles with verified salaries and direct AI skill match scoring.",
+      "updated": "Updated 12 mins ago",
+      "exploreAll": "Explore All 12,000+ Open Positions"
+    },
+    "jobCategories": {
+      "all": "All Roles",
+      "frontend": "Frontend",
+      "fullstack": "Backend & Fullstack",
+      "uiux": "UI/UX Design",
+      "data-ai": "Data & AI",
+      "remote": "Remote"
+    },
+    "approach": {
+      "badge": "The MatchIn Philosophy",
+      "title": "Hiring shouldn't be a game of buzzwords.",
+      "description": "MatchIn eliminates inflated resumes and keyword-stuffed applicant pipelines. By replacing guesswork with verifiable skill telemetry, we create mutual trust and match speed for high-impact teams.",
+      "tiles": {
+        "telemetry": { "title": "Verifiable Skill Telemetry", "description": "Deep-dive objective competency scores evaluated by graph neural benchmarks." },
+        "compensation": { "title": "Upfront Compensation Parity", "description": "Guaranteed verified salary bands and clear expectations before either side commits." }
+      },
+      "benefits": {
+        "accuracy": "Neural match accuracy across verified engineering & design proficiencies",
+        "response": "Zero ghosting with enforceable 72-hour recruiter response SLAs",
+        "privacy": "Private candidate profiles protected by end-to-end cryptographic trust"
+      },
+      "discover": "Discover the Matching Engine",
+      "methodology": "Read our methodology"
+    },
+    "categories": {
+      "badge": "Specialized Sectors",
+      "title": "One Platform for Every Career Path",
+      "description": "Browse curated categories and use AI-powered guidance to find opportunities that match your goals and skills.",
+      "viewRoles": "View Roles"
+    },
+    "categoryData": {
+      "development": { "title": "Development", "tags": "Frontend, Back, AI" },
+      "creative-design": { "title": "Creative Design", "tags": "UI/UX, Motion, 3D" },
+      "digital-marketing": { "title": "Digital Marketing", "tags": "Growth, SEO, Brand" },
+      "data-science": { "title": "Data Science", "tags": "MLOps, BI, Analytics" },
+      "finance-tax": { "title": "Finance & Tax", "tags": "FinOps, Audit, FP&A" },
+      "human-resources": { "title": "Human Resources", "tags": "Talent, People Ops" },
+      "customer-support": { "title": "Customer Support", "tags": "Success, Escalations" },
+      "health-science": { "title": "Health & Science", "tags": "Clinical, BioTech" }
+    },
+    "benefits": {
+      "badge": "Why MatchIn",
+      "title": "Better Matches. Faster Hiring.",
+      "description": "We simplify hiring for job seekers and employers with verified listings, AI-powered matching, clear workflows, and responsive support.",
+      "button": "Why MatchIn"
+    },
+    "benefitData": {
+      "verifiedJobs": { "title": "Verified Jobs", "description": "Every role is reviewed for quality and trust." },
+      "aiMatching": { "title": "AI-Powered Matching", "description": "Find opportunities based on skills, experience, and goals." },
+      "fastResults": { "title": "Fast Results", "description": "Apply quickly and stay on top of your progress." },
+      "privacyFirst": { "title": "Privacy First", "description": "Protect user data with modern security standards." }
+    },
+    "cta": {
+      "badge": "Start Your Journey",
+      "title": "Ready to Find Your Next Opportunity?",
+      "description": "Upload your CV to unlock instant AI skill scoring and curated match telemetry, or explore over 12,000+ verified engineering, design, and product roles.",
+      "uploadCv": "Upload CV",
+      "browseJobs": "Browse Jobs",
+      "trust": {
+        "Instant AI skill scoring": "Instant AI skill scoring",
+        "No credit card required": "No credit card required",
+        "SOC-2 & ISO 27001 Certified": "SOC-2 & ISO 27001 Certified"
+      }
+    },
+    "footer": {
+      "description": "High-signal talent matching and intelligent career mobility powered by deep graph neural network architecture.",
+      "copyright": "© {{year}} MatchIn Inc. All rights reserved.",
+      "subscribe": "Subscribe to Career Intelligence",
+      "emailPlaceholder": "Enter your work email",
+      "join": "Join",
+      "confirmation": "You're in — check your inbox to confirm.",
+      "columns": { "platform": "Platform", "resources": "Resources", "company": "Company" },
+      "links": {
+        "jobSearch": "Job Search Engine", "copilot": "AI Career Copilot", "sourcing": "Talent Sourcing", "plans": "Subscription Plans", "status": "Platform Status",
+        "salary": "Tech Salary Benchmark", "resume": "Resume Score Analyzer", "interview": "Interview Intelligence", "ladders": "Engineering Career Ladders", "community": "Developer Community",
+        "about": "About Us", "leadership": "Leadership Team", "careers": "Careers at MatchIn", "security": "Security & Trust", "privacy": "Privacy Policy", "terms": "Terms of Service", "cookies": "Cookie Settings"
+      }
+    }
+  },
+  "auth": {
+    "language": "English",
+        "switchLanguage": "العربية",
+        "side": {
+          "badge": "Better Opportunities",
+          "title": "Great companies hire great people",
+          "description": "Build your career with the right opportunities and take the next step toward your future."
+        },
+        "login": {
+          "welcome": "Welcome Back",
+          "subtitle": "Log in to your account to continue",
+          "email": "Email Address",
+          "emailPlaceholder": "you@example.com",
+          "password": "Password",
+          "passwordPlaceholder": "Enter your password",
+          "showPassword": "Show password",
+          "hidePassword": "Hide password",
+          "remember": "Remember me",
+          "forgot": "Forgot password?",
+          "submit": "Log In",
+          "or": "or continue with",
+          "google": "Continue with Google",
+          "terms": "By signing in, you agree to MatchIn's",
+          "termsLink": "Terms",
+          "privacyLink": "Privacy Policy",
+          "noAccount": "Don't have an account?",
+          "create": "Create an account →"
+        },
+        "register": {
+          "steps": ["Create account", "Verify email", "Upload CV", "Complete profile"],
+          "step": "STEP {{current}} OF 4",
+          "createTitle": "Create your account",
+          "createDescription": "Start with the basics — you can round out your profile next.",
+          "fullName": "Full name",
+          "fullNamePlaceholder": "e.g. Sara Ahmed",
+          "email": "Email address",
+          "emailPlaceholder": "you@company.com",
+          "password": "Password",
+          "passwordPlaceholder": "At least 8 characters",
+          "confirmPassword": "Confirm password",
+          "confirmPasswordPlaceholder": "Re-enter your password",
+          "agree": "I agree to MatchIn",
+          "terms": "Terms",
+          "privacy": "Privacy Policy",
+          "submit": "Create account",
+          "haveAccount": "Already have an account?",
+          "signIn": "Sign in",
+          "verifyTitle": "Verify your email",
+          "verifyDescription": "We sent a 6-digit code to {{email}}. Enter it below to continue.",
+          "yourEmail": "your email",
+          "resendIn": "Resend code in",
+          "resend": "Resend code",
+          "back": "Back",
+          "verify": "Verify & continue",
+          "uploadTitle": "Upload your CV",
+          "uploadDescription": "We'll read it once, privately, to pull out your skills and pre-fill your profile.",
+          "uploadLabel": "UPLOAD CV",
+          "uploadHelp": "PDF or DOCX, up to 10MB. This lets us auto-fill your profile and match you to better roles.",
+          "drop": "Drop your CV here, or",
+          "browse": "browse",
+          "fileLimit": "PDF or DOCX, up to 10MB",
+          "reading": "Reading…",
+          "ready": "Ready",
+          "remove": "Remove",
+          "browseJobs": "Browse Jobs",
+          "completeProfile": "Complete Profile",
+          "profileReading": "Reading your CV",
+          "profileTitle": "Complete your profile",
+          "profileReadingDescription": "Our model is scanning for roles, tools, and skills — this takes a few seconds.",
+          "profileDescription": "Here's what we found — review your skills and profile details below before finishing up.",
+          "analyzing": "Analyzing {{file}}",
+          "yourProfile": "your profile",
+          "cvAnalyzed": "CV analyzed",
+          "extracting": "Extracting skills and experience",
+          "extracted": "Skills extracted successfully",
+          "skillsSummary": "{{found}} skills found, {{matched}} matched to in-demand roles",
+          "matchedSkills": "SKILLS MATCHED TO YOUR ROLE",
+          "growth": "GROWTH OPPORTUNITIES",
+          "profile": "YOUR PROFILE",
+          "jobTitle": "Current or target job title",
+          "jobTitlePlaceholder": "e.g. Frontend Developer",
+          "location": "Location",
+          "locationPlaceholder": "City, Country",
+          "experience": "Years of experience",
+          "select": "Select",
+          "bio": "Short bio",
+          "optional": "optional",
+          "bioPlaceholder": "A couple of lines about what you do and what you're looking for.",
+          "autofilled": "Auto-filled",
+          "dashboard": "Go to dashboard"
+        },
+        "forgot": {
+          "back": "Back to Login",
+          "badge": "Smart Career Platform",
+          "title": "Forgot Password?",
+          "description": "Enter your account's email address and we will send you a secure link to reset your password immediately.",
+          "email": "Professional Email",
+          "emailPlaceholder": "tariq.mansour@company.com",
+          "send": "Send Reset Link",
+          "sending": "Sending Link...",
+          "retry": "Retry Sending",
+          "success": "A password reset link has been sent to your email.",
+          "failure": "Server connection failed. Please try again later.",
+          "security": "Advanced protection for your professional data. Saved with highest certified digital identity security standards.",
+          "invalidEmail": "Please enter a valid email address."
+        },
+        "reset": {
+          "back": "Back to Login",
+          "badge": "Smart Career Path Platform",
+          "title": "Set New Password",
+          "description": "Please enter a strong password and confirm it to protect your professional account on MatchIn",
+          "newPassword": "New Password",
+          "newPasswordPlaceholder": "Enter new password",
+          "confirmPassword": "Confirm Password",
+          "confirmPasswordPlaceholder": "Confirm new password",
+          "showPassword": "Show password",
+          "hidePassword": "Hide password",
+          "save": "Save & Set Password",
+          "verifying": "Verifying Security Link...",
+          "verifyingDescription": "Please wait a moment while we validate your reset link security token.",
+          "proceed": "Proceed to Form Manually",
+          "expired": "Link Has Expired",
+          "expiredDescription": "This password reset link is invalid or has expired for security reasons. Please request a new one.",
+          "request": "Request New Link",
+          "saving": "Saving New Password...",
+          "savingDescription": "Please wait while we securely update your password.",
+          "completed": "Onboarding Completed!",
+          "completedDescription": "Your password has been successfully updated, and your account set-up is now complete. You can access your personalized dashboard now.",
+          "dashboard": "Go to Dashboard",
+          "error": "Something Went Wrong",
+          "errorDescription": "We encountered an issue updating your password. Please check your network connection and try again.",
+          "tryAgain": "Try Again",
+          "security": "Advanced protection for your career data and application history adhering to top digital identity security standards and AES-256-bit encryption."
+        }
+      }
+  }

@@ -1,0 +1,29 @@
+# Version Control
+.git/
+.github/
+.gitignore/
+
+# Dependencies & Build Output 
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env config
+.env 
+.env.*
+!.env.example
+
+# IDE, Editor, Linter Artifacts 
+.idea/ 
+.vscode/
+.oxlintrc.json
+.DS_Store
+Thumbs.db 
+
+# Docker & Docs
+Dockerfile* 
+docker-compose*
+README.md 

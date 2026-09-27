@@ -1,0 +1,48 @@
+# === OS & Editor ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === Environment & Secrets ===
+.env
+.env.*
+!.env.example
+
+# === Backend (Laravel / PHP 8.3) ===
+Backend/vendor/
+Backend/node_modules/
+Backend/.phpunit.cache/
+Backend/bootstrap/ssr/
+Backend/public/build/
+Backend/public/hot
+Backend/public/storage
+Backend/storage/*.key
+Backend/storage/pail/
+Backend/.phpactor.json
+Backend/.phpunit.result.cache
+Backend/Homestead.json
+Backend/Homestead.yaml
+
+# === AI (Python / FastAPI) ===
+AI/__pycache__/
+AI/**/__pycache__/
+AI/*.py[cod]
+AI/**/*.py[cod]
+AI/env/
+AI/venv/
+AI/.venv/
+AI/build/
+AI/dist/
+AI/*.egg-info/
+AI/.eggs/
+
+# === Frontend (React / Vite) ===
+Frontend/node_modules/
+Frontend/dist/
+Frontend/build/
+
+# === Docker ===
+*.log

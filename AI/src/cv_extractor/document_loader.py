@@ -1,0 +1,229 @@
+from __future__ import annotations
+import logging
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+
+class DocumentLoader:
+    """
+    Direct document reader for CV files.
+    Supports native digital text extraction from PDF, DOCX, and TXT files.
+    """
+
+    SUPPORTED_EXTENSIONS = {
+        ".pdf": "pdf",
+        ".docx": "docx",
+        ".txt": "text",
+        ".md": "text",
+    }
+
+    def __init__(self):
+        self.extracted_links: list[str] = []
+
+    def load_text(self, file_path: str) -> tuple[str, str]:
+        """
+        Loads and extracts text from supported digital CV documents.
+        Returns: (extracted_text, document_format)
+        """
+        self.extracted_links = []
+        path = Path(file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"CV file not found: {file_path}")
+
+        ext = path.suffix.lower()
+        doc_type = self.SUPPORTED_EXTENSIONS.get(ext)
+
+        if not doc_type:
+            raise ValueError(
+                f"Unsupported document format: '{ext}'. "
+                f"Supported formats are: {', '.join(sorted(self.SUPPORTED_EXTENSIONS.keys()))}"
+            )
+
+        if doc_type == "pdf":
+            return self._extract_pdf(path), "pdf"
+        elif doc_type == "docx":
+            return self._extract_docx(path), "docx"
+        elif doc_type == "text":
+            return self._extract_plain_text(path), "text"
+        else:
+            raise ValueError(f"No extractor available for format: {ext}")
+
+    def _extract_pdf(self, path: Path) -> str:
+        """Extracts digital text and injects clickable hyperlink URLs inline at their exact positions."""
+        text_pages = []
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(str(path))
+            for page in reader.pages:
+                # 1. Collect link annotations with their bounding boxes
+                page_links = []
+                if hasattr(page, "annotations") and page.annotations:
+                    for annot_ref in page.annotations:
+                        try:
+                            annot = annot_ref.get_object() if hasattr(annot_ref, "get_object") else annot_ref
+                            if not annot or annot.get("/Subtype") != "/Link":
+                                continue
+                            rect = annot.get("/Rect")
+                            action = annot.get("/A")
+                            uri = None
+                            if action and hasattr(action, "get"):
+                                uri = action.get("/URI")
+                            elif annot and hasattr(annot, "get") and "/URI" in annot:
+                                uri = annot.get("/URI")
+
+                            if uri and rect:
+                                uri_str = str(uri).strip()
+                                if uri_str:
+                                    if uri_str not in self.extracted_links:
+                                        self.extracted_links.append(uri_str)
+                                    x1, y1, x2, y2 = [float(v) for v in rect]
+                                    page_links.append({
+                                        "uri": uri_str,
+                                        "x1": min(x1, x2),
+                                        "x2": max(x1, x2),
+                                        "y1": min(y1, y2),
+                                        "y2": max(y1, y2),
+                                        "used": False
+                                    })
+                        except Exception:
+                            continue
+
+                # Sort links in reading order: top-to-bottom (descending y), left-to-right (ascending x)
+                page_links.sort(key=lambda link_item: (-link_item["y2"], link_item["x1"]))
+
+                # 2. Extract text and inject hyperlinks inline at their exact text position
+                chunks = []
+                def visitor_body(text, cm, tm, font_dict, font_size):
+                    if not text:
+                        return
+                    x = tm[4]
+                    y = tm[5]
+
+                    matched_link = None
+                    is_anchor = any(kw in text for kw in ["[GitHub", "Repo", "Demo", "Link", "LinkedIn", "GitHub", "Portfolio", "Website", "http"])
+
+                    for link in page_links:
+                        if link["used"]:
+                            continue
+
+                        # Check vertical alignment (within 8pt baseline band)
+                        y_match = (link["y1"] - 8 <= y <= link["y2"] + 8)
+                        if not y_match:
+                            continue
+
+                        # Check horizontal alignment
+                        x_match = (link["x1"] - 30 <= x <= link["x2"] + 30)
+
+                        if is_anchor:
+                            if y_match:
+                                # If multiple links on the same line, pick the horizontally matching link
+                                nearby_links = [item for item in page_links if not item["used"] and item["y1"] - 8 <= y <= item["y2"] + 8]
+                                if len(nearby_links) == 1 or (link["x1"] - 50 <= x <= link["x2"] + 100):
+                                    matched_link = link
+                                    break
+                        elif x_match and y_match:
+                            matched_link = link
+                            break
+
+                    clean_text = text.rstrip()
+                    trailing_ws = text[len(clean_text):]
+
+                    if matched_link and clean_text.strip():
+                        matched_link["used"] = True
+                        uri_to_inject = matched_link["uri"]
+                        chunks.append(f"{clean_text} ({uri_to_inject}){trailing_ws}")
+                    else:
+                        chunks.append(text)
+
+                try:
+                    page.extract_text(visitor_text=visitor_body)
+                    page_text = "".join(chunks).strip()
+                except Exception as ve:
+                    logger.warning(f"Visitor text extraction failed, falling back to standard extract_text: {ve}")
+                    page_text = (page.extract_text() or "").strip()
+
+                if page_text:
+                    text_pages.append(page_text)
+
+        except Exception as e:
+            logger.error(f"pypdf extraction failed for {path}: {e}")
+            raise ValueError(f"Failed to read PDF document '{path.name}': {e!s}")
+
+        full_text = "\n".join(text_pages).strip()
+        if not full_text:
+            raise ValueError(
+                f"No readable text could be extracted from '{path.name}'. "
+                "Please ensure the document contains digital selectable text (scanned image PDFs are not supported)."
+            )
+        return full_text
+
+    def _extract_docx(self, path: Path) -> str:
+        """Extracts paragraphs, hyperlinks, and table cells from DOCX files."""
+        lines: list[str] = []
+        try:
+            import docx
+            from docx.oxml.ns import qn
+            doc = docx.Document(str(path))
+            for p in doc.paragraphs:
+                p_text = ""
+                for child in p._p:
+                    if child.tag.endswith("hyperlink"):
+                        r_id = child.get(qn("r:id"))
+                        # In docx oxml, text is strictly in <w:t> nodes.
+                        # Do NOT use child.iter() without filtering for w:t, because parent oxml elements
+                        # return the same text as their children, causing duplicated/tripled words.
+                        link_text = "".join(t.text for t in child.iter(qn("w:t")) if t.text)
+                        target = None
+                        if r_id and r_id in p.part.rels:
+                            target = p.part.rels[r_id].target_ref
+                            if target and target not in self.extracted_links:
+                                self.extracted_links.append(target)
+                        if target and target not in link_text:
+                            p_text += f" {link_text} ({target}) "
+                        else:
+                            p_text += link_text
+                    elif child.tag.endswith("r"):
+                        # In docx oxml, text within a run <w:r> is strictly in <w:t> nodes.
+                        run_text = "".join(t.text for t in child.iter(qn("w:t")) if t.text)
+                        p_text += run_text
+                clean_line = p_text.strip() or p.text.strip()
+                if clean_line:
+                    lines.append(clean_line)
+
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+                    if row_text:
+                        lines.append(row_text)
+            return "\n\n".join(lines)
+            extracted = "\n\n".join(lines).strip()
+            if not extracted:
+                raise ValueError(
+                    f"No readable text could be extracted from DOCX file '{path.name}'."
+                )
+            return extracted
+        except ImportError:
+            # Fallback direct zip XML extraction if python-docx isn't installed
+            import xml.etree.ElementTree as ET
+            import zipfile
+            with zipfile.ZipFile(str(path)) as z:
+                xml_content = z.read("word/document.xml")
+            tree = ET.fromstring(xml_content)
+            namespaces = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+            text_nodes = tree.findall(".//w:t", namespaces)
+            return " ".join(node.text for node in text_nodes if node.text)
+            extracted = " ".join(node.text for node in text_nodes if node.text).strip()
+            if not extracted:
+                raise ValueError(
+                    f"No readable text could be extracted from DOCX file '{path.name}'."
+                )
+            return extracted
+        except Exception as e:
+            logger.error(f"DOCX extraction error for {path}: {e}")
+            raise ValueError(f"Failed to extract text from DOCX file '{path.name}': {e!s}")
+
+    def _extract_plain_text(self, path: Path) -> str:
+        """Reads plain text files with UTF-8 encoding."""
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return f.read()
