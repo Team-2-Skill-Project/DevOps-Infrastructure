@@ -23,7 +23,7 @@ class CvDocumentSeeder extends Seeder
             ]);
 
             CvExtraction::factory()->create([
-                'cv_document_id' => $cv->id,
+                'cv_document_id' => $cv->getKey(),
             ]);
         }
     }

@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\CandidateProfile;
 use App\Models\CandidateSkill;
 use App\Models\CareerPreference;
@@ -12,6 +11,7 @@ use App\Models\Experience;
 use App\Models\Language;
 use App\Models\Project;
 use App\Models\Skill;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class CandidateProfileSeeder extends Seeder
@@ -32,11 +32,14 @@ class CandidateProfileSeeder extends Seeder
             ->has(CareerPreference::factory(), 'careerPreference')
             ->create();
 
-        $skill = Skill::query()->where('name', 'Laravel')->first();
-        if ($skill) {
-            $profile->skills()->syncWithoutDetaching([
-                $skill->id => ['source' => CandidateSkill::SOURCE_MANUAL]
-            ]);
-        }
+        $skill = Skill::query()->firstOrCreate([
+            'name' => 'Laravel',
+            'normalized_name' => 'laravel',
+            'category' => 'Backend',
+        ]);
+
+        $profile->skills()->syncWithoutDetaching([
+            $skill->id => ['source' => CandidateSkill::SOURCE_MANUAL],
+        ]);
     }
 }

@@ -9,7 +9,8 @@ class ApplicationResource extends JsonApiResource
     /**
      * The resource's attributes.
      */
-    public $attributes = [
+    /** @var array<string> */
+    public array $attributes = [
         'status',
         'cover_letter',
         'applied_at',
@@ -20,7 +21,8 @@ class ApplicationResource extends JsonApiResource
     /**
      * The resource's relationships.
      */
-    public $relationships = [
+    /** @var array<string> */
+    public array $relationships = [
         'job',
         'candidateProfile',
         'histories',

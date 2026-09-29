@@ -1,8 +1,5 @@
 {
-    "agents": [
-        "antigravity",
-        "junie"
-    ],
+    "agents": ["antigravity", "junie"],
     "cloud": false,
     "guidelines": true,
     "mcp": true,

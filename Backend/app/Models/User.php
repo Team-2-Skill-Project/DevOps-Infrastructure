@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Services\EmailOtpService;
@@ -83,6 +85,20 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
     public function getJWTIdentifier()
     {
         return $this->getKey();
+    }
+
+    /** @return HasMany<Application, $this> */
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'user_id');
+    }
+
+    /**
+     * @return HasMany<Roadmap, $this>
+     */
+    public function roadmaps(): HasMany
+    {
+        return $this->hasMany(Roadmap::class);
     }
 
     /** @return array<string, mixed> */

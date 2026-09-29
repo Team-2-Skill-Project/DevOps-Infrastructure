@@ -37,13 +37,7 @@ export default function Profile({
                     description="Update your name and email address"
                 />
 
-                <Form
-                    {...ProfileController.update.form()}
-                    options={{
-                        preserveScroll: true,
-                    }}
-                    className="space-y-6"
-                >
+                <Form action={ProfileController.update()} method="patch">
                     {({ processing, errors }) => (
                         <>
                             <div className="grid gap-2">

@@ -3,11 +3,18 @@
 namespace App\Models;
 
 use App\Enums\ApplicationStatus;
+use Database\Factories\ApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @method static \Database\Factories\ApplicationFactory factory($count = null, $state = [])
+ */
 class Application extends Model
 {
+    /** @use HasFactory<ApplicationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -21,17 +28,26 @@ class Application extends Model
         'status' => ApplicationStatus::class,
     ];
 
-    public function candidateProfile()
+    /**
+     * @return BelongsTo<CandidateProfile, $this>
+     */
+    public function candidateProfile(): BelongsTo
     {
         return $this->belongsTo(CandidateProfile::class);
     }
 
-    public function job()
+    /**
+     * @return BelongsTo<JobPost, $this>
+     */
+    public function job(): BelongsTo
     {
         return $this->belongsTo(JobPost::class);
     }
 
-    public function histories()
+    /**
+     * @return HasMany<ApplicationStatusHistory, $this>
+     */
+    public function histories(): HasMany
     {
         return $this->hasMany(ApplicationStatusHistory::class);
     }

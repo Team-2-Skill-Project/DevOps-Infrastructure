@@ -13,4 +13,21 @@ abstract class TestCase extends BaseTestCase
             $this->markTestSkipped($message ?? "Fortify feature [{$feature}] is not enabled.");
         }
     }
+
+    /**
+     * Proxy to the base `actingAs` to preserve default behavior for web tests.
+     * Use `actingAsApi($user)` when you need the `api` guard for API routes.
+     */
+    public function actingAs($user, $guard = null)
+    {
+        return parent::actingAs($user, $guard);
+    }
+
+    /**
+     * Authenticate the given user for the `api` guard specifically.
+     */
+    public function actingAsApi($user)
+    {
+        return parent::actingAs($user, 'api');
+    }
 }

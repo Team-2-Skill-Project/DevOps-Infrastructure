@@ -25,4 +25,10 @@ class SavedJob extends Model
     {
         return $this->belongsTo(JobPost::class);
     }
+
+    /** @return BelongsTo<JobPost, $this> */
+    public function job(): BelongsTo
+    {
+        return $this->belongsTo(JobPost::class, 'job_post_id');
+    }
 }

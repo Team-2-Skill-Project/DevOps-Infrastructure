@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property string|null $target_role
+ * @property string|null $preferred_work_mode
+ * @property string|null $location
+ */
 class CandidateProfile extends Model
 {
     /** @use HasFactory<CandidateProfileFactory> */
@@ -19,6 +24,9 @@ class CandidateProfile extends Model
         'user_id',
         'date_of_birth',
         'gender',
+        'target_role',
+        'preferred_work_mode',
+        'location',
         'job_title',
         'country',
         'state',
@@ -29,6 +37,14 @@ class CandidateProfile extends Model
         'professional_summary',
         'profile_completed_at',
     ];
+
+    /**
+     * @property int $id
+     * @property int $user_id
+     * @property string|null $target_role
+     * @property string|null $preferred_work_mode
+     * @property string|null $location
+     */
 
     /** @return array<string, string> */
     protected function casts(): array

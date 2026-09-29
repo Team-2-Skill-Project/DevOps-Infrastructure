@@ -167,7 +167,7 @@ class JobDeduplicationService
     }
 
     /**
-     * @param array<string, mixed> $normalized
+     * @param  array<string, mixed>  $normalized
      * @return array<string, mixed>
      */
     private function baseEvidence(RawJob $record, array $normalized, ?int $companyId, string $companyMode, string $fingerprint): array

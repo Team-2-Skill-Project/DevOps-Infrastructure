@@ -1,19 +1,29 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
-use App\Models\CvDocument;
 use App\Enums\CvExtractionStatus;
+use App\Models\CvDocument;
+use App\Models\CvExtraction;
+use App\Models\CvExtraction as CvExtractionModel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<CvExtractionModel>
+ */
 class CvExtractionFactory extends Factory
 {
+    /** @var class-string<CvExtraction> @extends \Illuminate\Database\Eloquent\Factories\Factory<CvExtraction> */
+    protected $model = CvExtractionModel::class;
+
     public function definition(): array
     {
         return [
             'cv_document_id' => CvDocument::factory(),
             'attempt_number' => 1,
-            'status' => CvExtractionStatus::SUCCESS,
+            'status' => CvExtractionStatus::COMPLETED->value,
             'provider' => 'openai',
             'model' => 'gpt-4o',
             'parser_version' => '1.0.0',

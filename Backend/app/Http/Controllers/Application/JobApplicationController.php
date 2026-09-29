@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Application\StoreJobApplicationRequest;
 use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
-use App\Traits\ApiResponse;
 use App\Services\JobApplicationService;
+use App\Traits\ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class JobApplicationController extends Controller
 {
     use ApiResponse;
+
     protected JobApplicationService $applicationService;
 
     public function __construct(JobApplicationService $applicationService)
@@ -22,9 +26,8 @@ class JobApplicationController extends Controller
 
     /**
      * Display a listing of the job applications for the authenticated user, with optional filtering by status and search by job title.
-     *
      */
-    public function index(Request $request)
+    public function index(Request $request): AnonymousResourceCollection
     {
         $user = $request->user();
         $query = Application::query()->with(['job.company', 'candidateProfile.user', 'histories']);
@@ -39,7 +42,7 @@ class JobApplicationController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->whereHas('job', function($q) use ($search) {
+            $query->whereHas('job', function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%");
             });
         }
@@ -50,9 +53,9 @@ class JobApplicationController extends Controller
     }
 
     /**
-     * 2. store a new job application and log the initial status in the history table.
+     * Store a new job application and log the initial status in the history table.
      */
-    public function store(StoreJobApplicationRequest $request)
+    public function store(StoreJobApplicationRequest $request): Response|JsonResponse
     {
         $candidateProfileId = $request->user()->candidateProfile->id;
 
@@ -63,16 +66,16 @@ class JobApplicationController extends Controller
         return (new ApplicationResource($application))
             ->additional([
                 'status' => 'success',
-                'message' => 'The request has been submitted successfully.'
+                'message' => __('application.submitted_success'),
             ])
             ->response()
             ->setStatusCode(201);
     }
 
     /**
-     * 3. show the details of a specific job application, including related job and company information, status history, and candidate profile with user information.
+     * Show the details of a specific job application.
      */
-    public function show(Application $application)
+    public function show(Application $application): ApplicationResource
     {
         $application->load(['job.company', 'histories.changer', 'candidateProfile.user']);
 
@@ -80,19 +83,19 @@ class JobApplicationController extends Controller
     }
 
     /**
-     * 4. update the status of a job application and log the change in the history table (Update Status - For Admin or Company Only)
+     * Update the status of a job application (For Admin or Company Only).
      */
-    public function updateStatus(Request $request, Application $application)
+    public function updateStatus(Request $request, Application $application): ApplicationResource|JsonResponse
     {
         $user = $request->user();
 
         if ($user->role === 'candidate' && $application->candidate_profile_id !== $user->candidateProfile?->id) {
-            return $this->errorResponse('Unauthorized', 403);
+            return $this->errorResponse(__('application.unauthorized'), 403);
         }
 
         $request->validate([
             'status' => ['required', 'string'],
-            'notes' => ['nullable', 'string', 'max:500']
+            'notes' => ['nullable', 'string', 'max:500'],
         ]);
 
         $updatedApplication = $this->applicationService->updateStatus(
@@ -106,17 +109,17 @@ class JobApplicationController extends Controller
         return (new ApplicationResource($updatedApplication))
             ->additional([
                 'status' => 'success',
-                'message' => 'The application status has been successfully updated.'
+                'message' => __('application.status_updated_success'),
             ]);
     }
 
     /**
-     * 5. pull request to withdraw the application (Withdraw Application - For Candidate Only)
+     * Pull request to withdraw the application (For Candidate Only).
      */
-    public function withdraw(Application $application)
+    public function withdraw(Application $application): ApplicationResource|JsonResponse
     {
         if ($application->candidate_profile_id !== auth()->user()->candidateProfile->id) {
-            return $this->errorResponse('You are not authorized to perform these operations.', 403);
+            return $this->errorResponse(__('application.unauthorized_action'), 403);
         }
 
         $updatedApplication = $this->applicationService->updateStatus(
@@ -130,7 +133,7 @@ class JobApplicationController extends Controller
         return (new ApplicationResource($updatedApplication))
             ->additional([
                 'status' => 'success',
-                'message' => 'The application has been successfully withdrawn.'
+                'message' => __('application.withdrawn_success'),
             ]);
     }
 }

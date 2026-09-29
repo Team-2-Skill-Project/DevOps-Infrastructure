@@ -80,11 +80,7 @@ export default function TwoFactorRecoveryCodes({
                     </Button>
 
                     {canRegenerateCodes && (
-                        <Form
-                            {...regenerateRecoveryCodes.form()}
-                            options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
-                        >
+                        <Form action={regenerateRecoveryCodes()} method="post">
                             {({ processing }) => (
                                 <Button
                                     variant="secondary"

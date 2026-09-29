@@ -2,16 +2,11 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 
 class CvDocumentResource extends JsonApiResource
 {
-    /**
-     * The resource's attributes.
-     *
-     * @var array|string
-     */
+    /** @var array<string> */
     public array $attributes = [
         'original_filename',
         'storage_disk',
@@ -28,11 +23,7 @@ class CvDocumentResource extends JsonApiResource
         'updated_at',
     ];
 
-    /**
-     * The resource's relationships.
-     *
-     * @var array|string
-     */
+    /** @var array<string> */
     public array $relationships = [
         'candidateProfile',
         'extractions',

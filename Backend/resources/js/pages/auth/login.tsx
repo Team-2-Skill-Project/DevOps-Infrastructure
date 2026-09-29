@@ -26,11 +26,7 @@ export default function Login({ status, canResetPassword }: Props) {
             <PasskeyVerify />
             <GoogleLoginButton />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
+            <Form action={store()} method="post">
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">

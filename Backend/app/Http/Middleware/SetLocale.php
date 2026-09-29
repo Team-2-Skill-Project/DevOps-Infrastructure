@@ -19,7 +19,13 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        App::setLocale($this->preferredLocale($request));
+        $locale = $request->header('Accept-Language') ?? $request->query('lang');
+
+        if ($locale && in_array($locale, ['ar', 'en'])) {
+            App::setLocale($locale);
+        } else {
+            App::setLocale($this->preferredLocale($request));
+        }
 
         return $next($request);
     }

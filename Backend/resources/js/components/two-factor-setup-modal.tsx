@@ -139,7 +139,7 @@ function TwoFactorSetupStep({
 }
 
 function TwoFactorVerificationStep({
-    onClose,
+    onClose: _onClose,
     onBack,
 }: {
     onClose: () => void;
@@ -155,12 +155,7 @@ function TwoFactorVerificationStep({
     }, []);
 
     return (
-        <Form
-            {...confirm.form()}
-            onSuccess={() => onClose()}
-            resetOnError
-            resetOnSuccess
-        >
+        <Form action={confirm()} method="post" resetOnError resetOnSuccess>
             {({
                 processing,
                 errors,

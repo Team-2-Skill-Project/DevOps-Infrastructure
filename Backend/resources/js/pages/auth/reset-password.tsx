@@ -13,16 +13,16 @@ type Props = {
     passwordRules: string;
 };
 
-export default function ResetPassword({ token, email, passwordRules }: Props) {
+export default function ResetPassword({
+    token: _token,
+    email,
+    passwordRules,
+}: Props) {
     return (
         <>
             <Head title="Reset password" />
 
-            <Form
-                {...update.form()}
-                transform={(data) => ({ ...data, token, email })}
-                resetOnSuccess={['password', 'password_confirmation']}
-            >
+            <Form action={update()} method="post">
                 {({ processing, errors }) => (
                     <div className="grid gap-6">
                         <div className="grid gap-2">

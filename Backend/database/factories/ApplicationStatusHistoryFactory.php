@@ -1,14 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
-use App\Models\Application;
-use App\Models\User;
 use App\Enums\ApplicationStatus;
+use App\Models\Application;
+use App\Models\ApplicationStatusHistory;
+use App\Models\ApplicationStatusHistory as ApplicationStatusHistoryModel;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<ApplicationStatusHistoryModel>
+ */
 class ApplicationStatusHistoryFactory extends Factory
 {
+    /** @var class-string<ApplicationStatusHistory> @extends \Illuminate\Database\Eloquent\Factories\Factory<ApplicationStatusHistory> */
+    protected $model = ApplicationStatusHistoryModel::class;
+
     public function definition(): array
     {
         return [

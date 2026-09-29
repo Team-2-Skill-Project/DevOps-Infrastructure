@@ -116,3 +116,4 @@ Route::post('/admin/skills/{sourceSkill}/merge', SkillMergeController::class)->m
 
 require __DIR__.'/cv.php';
 require __DIR__.'/applications.php';
+require __DIR__.'/ai.php';
