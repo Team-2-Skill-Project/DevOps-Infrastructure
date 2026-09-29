@@ -1,0 +1,29 @@
+# System Runtimes 
+php>=8.3.0
+composer>=2.8.0
+
+# PHP Extensions 
+ext-pdo
+ext-pdo_mysql
+ext-pdo_pgsql
+ext-redis
+ext-bcmath
+ext-intl
+ext-zip 
+ext-mbstring 
+ext-xml 
+ext-curl
+ext-opcache 
+ext-pcntl
+
+# Databases & Daemons 
+mariadb-server>=11.8.0
+redis-server>=7.0.0
+
+# Laravel Packages
+laravel/framework:^13.17
+intertiajs/intertia-laravel:^3.0
+laravel/fortify:^1.37.2 
+laravel/sanctum:^4.0
+tymon/jwt-auth:^2.3
+laravel/tinker:^3.0 
