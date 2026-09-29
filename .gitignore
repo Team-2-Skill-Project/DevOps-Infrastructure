@@ -46,3 +46,4 @@ Frontend/build/
 
 # === Docker ===
 *.log
+AI/tests
