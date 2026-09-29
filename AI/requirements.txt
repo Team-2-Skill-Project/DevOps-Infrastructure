@@ -31,3 +31,7 @@ openai>=1.0.0
 # --- External APIs & Web Search ---
 google-api-python-client>=2.100.0
 duckduckgo-search>=5.0.0
+
+# --- Testing Suite ---
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
