@@ -28,8 +28,10 @@ class CacheService:
             try:
                 client = get_redis_client()
                 val = client.get(redis_key)
-                if val is not None:
+                if isinstance(val, (str, bytes, bytearray)):
                     return json.loads(val)
+                elif val is not None:
+                    return json.loads(str(val))
                 return None
             except Exception as e:
                 logger.warning(f"Redis cache get failed for '{key}' ({e}); checking memory cache.")
@@ -76,14 +78,20 @@ class CacheService:
         return True
 
     def flush(self) -> None:
-        """Clears all cached items under the prefix."""
+        """Clears all cached items under the prefix using non-blocking SCAN iteration."""
         self._memory_cache.clear()
         if is_redis_available():
             try:
                 client = get_redis_client()
-                keys = client.keys(f"{self.prefix}*")
-                if keys:
-                    client.delete(*keys)
+                batch_size = 100
+                batch = []
+                for key in client.scan_iter(match=f"{self.prefix}*", count=batch_size):
+                    batch.append(key)
+                    if len(batch) >= batch_size:
+                        client.delete(*batch)
+                        batch.clear()
+                if batch:
+                    client.delete(*batch)
             except Exception as e:
                 logger.warning(f"Redis cache flush failed: {e}")
 

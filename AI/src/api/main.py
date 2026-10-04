@@ -4,159 +4,142 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-import groq
 import uvicorn
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-# pyrefly: ignore [missing-import]
-from src.api.routers.cv_router import router as cv_router
-from src.api.routers.job_router import router as job_router
-from src.api.schemas.cv_schemas import ExtractionErrorResponse
-from src.api.security import check_rate_limit, verify_api_key
-from src.api.v1.routers import (
-    matches_router,
-    review_queue_router,
-    roadmap_router,
-    recommendations_router,
-    router as interview_router,
-)
-# pyrefly: ignore [missing-import]
-from src.core.config import get_app_settings, settings
-# pyrefly: ignore [missing-import]
+
+from src.core.security import verify_api_key
+from src.api.v1.routers import api_router
+from src.core.config import settings
+from src.core.logging import setup_logging
 from src.core.redis import is_redis_available, redis_manager
-# pyrefly: ignore [missing-import]
 from src.db.base import init_db
-# pyrefly: ignore [missing-import]
-from src.middleware.llm_middleware import DynamicLLMMiddleware
-# pyrefly: ignore [missing-import]
 from src.middleware.rate_limit_middleware import RateLimitMiddleware
+from src.schemas.cv import ExtractionErrorResponse
 
 load_dotenv()
 logger = logging.getLogger(__name__)
-app_settings = get_app_settings()
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    """Initialize persistence and release shared resources on shutdown."""
+    """Initialize logging, persistence, and release shared resources on shutdown."""
+    setup_logging()
+    logger.info("Initializing SkillMatch service components...")
+
     init_db()
-    if is_redis_available():
-        logger.info("Redis is available at %s", settings.REDIS_URL)
-    else:
-        logger.warning("Redis is unavailable; using local fallbacks where supported")
+
     yield
-    redis_manager.close()
+
+    logger.info("Releasing shared connection pools...")
+    try:
+        res = redis_manager.close()
+        import inspect
+        if inspect.isawaitable(res):
+            await res
+    except Exception as e:
+        logger.warning(f"Error closing redis connection pool: {e}")
+    logger.info("SkillMatch service shutdown completed.")
 
 
 app = FastAPI(
-    title="SkillMatch AI Services API",
-    description=(
-        "Production AI Services API for SkillMatch. The canonical AI-Serv5 CV "
-        "extraction pipeline powers CV, matching, interview, and review features."
-    ),
+    title=settings.PROJECT_NAME,
     version=settings.VERSION,
+    description="Unified API server for CV profile extraction, job matching, interview coaching, and recommendations.",
+    openapi_url="/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json",
     lifespan=lifespan,
 )
 
-# Request-scoped model/key/base-url overrides are disabled by default. They can
-# be enabled explicitly for a trusted development environment only.
-app.add_middleware(
-    DynamicLLMMiddleware,
-    allow_overrides=settings.LLM_ALLOW_REQUEST_OVERRIDES,
-)
+from fastapi.responses import RedirectResponse
 
-# Rate-limit feature endpoints centrally. The canonical CV router keeps its
-# existing dependency-based limiter so its original contract remains intact.
+@app.get(f"{settings.API_V1_STR}/docs", include_in_schema=False)
+async def redirect_api_v1_docs():
+    return RedirectResponse(url="/docs")
+
+@app.get(f"{settings.API_V1_STR}/redoc", include_in_schema=False)
+async def redirect_api_v1_redoc():
+    return RedirectResponse(url="/redoc")
+
+@app.get(f"{settings.API_V1_STR}/openapi.json", include_in_schema=False)
+async def redirect_api_v1_openapi():
+    return RedirectResponse(url="/openapi.json")
+
+# Single Rate Limit Middleware instance
 app.add_middleware(RateLimitMiddleware)
 
+# CORS Middleware setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=app_settings.cors_allowed_origins,
-    allow_credentials=app_settings.cors_allow_credentials,
-    allow_methods=app_settings.cors_allowed_methods,
-    allow_headers=app_settings.cors_allowed_headers,
+    allow_origins=getattr(settings, "CORS_ORIGINS", ["*"]),
+    allow_credentials=getattr(settings, "cors_allow_credentials", True),
+    allow_methods=getattr(settings, "cors_allowed_methods", ["*"]),
+    allow_headers=getattr(settings, "cors_allowed_headers", ["*"]),
 )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    first_err = exc.errors()[0] if exc.errors() else {}
+    msg = first_err.get("msg", "Validation error")
+    field = ".".join(str(loc) for loc in first_err.get("loc", []) if loc != "body")
+
+    detail_msg = f"{msg} (field: {field})" if field else msg
+
+    return JSONResponse(
+        status_code=422,
+        content=ExtractionErrorResponse(
+            error="VALIDATION_ERROR",
+            error_code="VALIDATION_ERROR",
+            detail=detail_msg,
+        ).model_dump(),
+    )
 
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(_: Request, exc: HTTPException):
-    if isinstance(exc.detail, dict):
-        detail = str(exc.detail.get("detail", exc.detail))
-        error_code = str(exc.detail.get("error_code", "HTTP_ERROR"))
-    else:
-        detail = str(exc.detail)
-        status_code_map = {
-            400: "BAD_REQUEST",
-            401: "UNAUTHORIZED",
-            403: "FORBIDDEN",
-            404: "NOT_FOUND",
-            413: "FILE_TOO_LARGE",
-            422: "VALIDATION_ERROR",
-            429: "RATE_LIMIT_EXCEEDED",
-            500: "INTERNAL_SERVER_ERROR",
-        }
-        error_code = status_code_map.get(exc.status_code, "HTTP_ERROR")
+async def http_exception_handler(request: Request, exc: HTTPException):
+    code_map = {
+        400: "BAD_REQUEST",
+        401: "UNAUTHORIZED",
+        403: "FORBIDDEN",
+        404: "NOT_FOUND",
+        422: "UNPROCESSABLE_ENTITY",
+        429: "RATE_LIMIT_EXCEEDED",
+    }
+    detail = exc.detail
+    detail_error_code = detail.get("error_code") if isinstance(detail, dict) else None
+    detail_message = detail.get("detail", detail) if isinstance(detail, dict) else detail
+    error_code = detail_error_code or code_map.get(exc.status_code, "HTTP_ERROR")
 
     return JSONResponse(
         status_code=exc.status_code,
-        content=ExtractionErrorResponse(detail=detail, error_code=error_code).model_dump(),
+        content={
+            "error": error_code,
+            "error_code": error_code,
+            "detail": detail_message,
+        },
         headers=exc.headers,
     )
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(_: Request, exc: RequestValidationError):
-    detail = "; ".join(
-        f"{'.'.join(str(loc) for loc in err['loc'])}: {err['msg']}" for err in exc.errors()
-    )
-    return JSONResponse(
-        status_code=422,
-        content=ExtractionErrorResponse(detail=detail, error_code="VALIDATION_ERROR").model_dump(),
-    )
-
-
-@app.exception_handler(groq.AuthenticationError)
-async def groq_auth_exception_handler(_: Request, __: groq.AuthenticationError):
-    return JSONResponse(
-        status_code=401,
-        content={
-            "error": "LLM_AUTHENTICATION_ERROR",
-            "detail": "Invalid or expired Groq API key. Configure GROQ_API_KEY or provide a request-level LLM token.",
-        },
-    )
-
-
-@app.exception_handler(groq.RateLimitError)
-async def groq_rate_limit_exception_handler(_: Request, __: groq.RateLimitError):
-    return JSONResponse(
-        status_code=429,
-        content={
-            "error": "LLM_RATE_LIMIT_ERROR",
-            "detail": "Groq rate limit exceeded. Please retry after a brief delay.",
-        },
-    )
-
-
-@app.exception_handler(groq.GroqError)
-async def groq_gateway_exception_handler(_: Request, exc: groq.GroqError):
-    return JSONResponse(
-        status_code=502,
-        content={
-            "error": "LLM_GATEWAY_ERROR",
-            "detail": f"Error communicating with LLM provider: {exc}",
-        },
-    )
-
-
 @app.exception_handler(Exception)
-async def unhandled_exception_handler(request: Request, exc: Exception):
-    logger.error("Unhandled error on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error("Unhandled Exception caught by global handler: %s", exc, exc_info=True)
+
+    if isinstance(exc, ValueError):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "BAD_REQUEST",
+                "error_code": "BAD_REQUEST",
+                "detail": str(exc),
+            },
+        )
+
     return JSONResponse(
         status_code=500,
         content={
@@ -167,64 +150,47 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
     )
 
 
-# CV routes already carry the stable /api/v1/cv prefix from AI-Serv5.
-app.include_router(cv_router, dependencies=[Depends(check_rate_limit), Depends(verify_api_key)])
+# Mount aggregated API v1 router. All /api/v1 endpoints inherit API-key verification.
+app.include_router(
+    api_router,
+    prefix=settings.API_V1_STR,
+    dependencies=[Depends(verify_api_key)],
+)
 
-# The rest of the feature routes use the shared version prefix and inherit the
-# global rate limiter. API-key protection is applied consistently here too.
-for feature_router in (
-    interview_router,
-    matches_router,
-    review_queue_router,
-    job_router,
-    roadmap_router,
-    recommendations_router,
-):
-    app.include_router(
-        feature_router,
-        prefix=settings.API_V1_STR,
-        dependencies=[Depends(verify_api_key)],
-    )
-
-
-# Ensure database-backed feature routes work for TestClient and simple local
-# runs even when the server lifespan is not explicitly entered.
+# Ensure database tables are initialized
 init_db()
+
+
+
+@app.get("/", tags=["System Health"], summary="Root Endpoint")
+async def root():
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "docs_url": "/docs",
+    }
 
 
 @app.get("/health", tags=["System Health"], summary="Health Check")
 async def health_check():
+    redis_avail = is_redis_available()
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
-        "active_model": settings.llm.model_name,
+        "active_model": settings.parse_provider_and_model()[1],
+        "features": {
+            "job_description_understanding": "active",
+        },
+        "redis_connected": redis_avail,
         "redis": {
-            "status": "connected" if is_redis_available() else "unavailable",
+            "status": "connected" if redis_avail else "unavailable",
             "url": settings.REDIS_URL,
         },
-        "features": {
-            "cv_profile_extraction": "active",
-            "skill_gap_analysis": "active",
-            "interview_coach": "active",
-            "review_queue": "active",
-            "job_description_understanding": "active",
-            "personalized_job_recommendations": "active",
-        },
-    }
-
-
-@app.get("/", tags=["Root"], summary="API Root")
-async def root():
-    return {
-        "message": "Welcome to SkillMatch AI Services API",
-        "docs": "/docs",
-        "redoc": "/redoc",
-        "health": "/health",
-        "version": settings.VERSION,
     }
 
 
 if __name__ == "__main__":
-    uvicorn.run("src.api.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("src.api.main:app", host="127.0.0.1", port=8001, reload=True)

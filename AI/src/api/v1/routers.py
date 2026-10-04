@@ -1,24 +1,51 @@
+"""Aggregated API v1 Router for all SkillMatch features."""
+
 from __future__ import annotations
-from fastapi import APIRouter, status
-from src.schemas.interview import (
-    QuestionGenerationRequest,
-    QuestionSetResponse,
-    AnswerSubmission,
-    AnswerEvaluationResponse
-)
-from src.services.interview_service import interview_service
-from src.api.v1.endpoints.matches import router as matches_router
-from src.api.v1.endpoints.review_queue import router as review_queue_router
+
+from fastapi import APIRouter, Depends
+
+from src.core.security import check_rate_limit
 from src.api.v1.endpoints.cv import router as cv_router
-from src.api.v1.endpoints.roadmap import router as roadmap_router
+from src.api.v1.endpoints.cv_improvement import router as cv_improvement_router
+from src.api.v1.endpoints.interview import router as interview_router
+from src.api.v1.endpoints.jobs import router as jobs_router
+from src.api.v1.endpoints.matches import router as matches_router
 from src.api.v1.endpoints.recommendations import router as recommendations_router
+from src.api.v1.endpoints.review_queue import router as review_queue_router
+from src.api.v1.endpoints.roadmap import router as roadmap_router
+from src.api.v1.endpoints.application_strategy import router as strategy_router
+from src.api.mentor_routes import router as mentor_router
 
-router = APIRouter(prefix="/interview", tags=["Interview Preparation Coach"])
+api_router = APIRouter()
 
-@router.post("/generate", response_model=QuestionSetResponse, status_code=status.HTTP_200_OK)
-async def generate_interview_questions(payload: QuestionGenerationRequest):
-    return await interview_service.create_prep_session(payload)
+# CV extraction retains its route-level rate limiter dependency to adhere to
+# the ExtractionErrorResponse error contract while being exempt from the middleware.
+api_router.include_router(cv_router, dependencies=[Depends(check_rate_limit)])
+api_router.include_router(cv_improvement_router)
 
-@router.post("/evaluate", response_model=AnswerEvaluationResponse, status_code=status.HTTP_200_OK)
-async def evaluate_interview_answer(payload: AnswerSubmission):
-    return await interview_service.evaluate_submission(payload)
+api_router.include_router(jobs_router)
+api_router.include_router(matches_router)
+api_router.include_router(review_queue_router)
+api_router.include_router(roadmap_router)
+api_router.include_router(recommendations_router)
+api_router.include_router(interview_router)
+api_router.include_router(mentor_router)
+api_router.include_router(strategy_router)
+
+
+# Compatibility aliases
+router = api_router
+job_router = jobs_router
+
+__all__ = [
+    "api_router",
+    "router",
+    "cv_router",
+    "interview_router",
+    "jobs_router",
+    "job_router",
+    "matches_router",
+    "recommendations_router",
+    "review_queue_router",
+    "roadmap_router",
+]

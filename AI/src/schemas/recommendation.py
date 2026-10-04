@@ -6,8 +6,8 @@ item contains `job_id`, `rank`, `score`, and `reasons: List[str]`, along with
 rich structured breakdown and explanation metadata.
 """
 
-from datetime import datetime
-from typing import List, Optional, Literal
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -71,7 +71,7 @@ class RecommendationFeedResponse(BaseModel):
     page: int = Field(default=1, ge=1, description="Current page number")
     limit: int = Field(default=20, ge=1, description="Maximum items requested per page")
     has_more: bool = Field(default=False, description="Whether more pages are available")
-    generated_at: datetime = Field(default_factory=datetime.utcnow, description="UTC timestamp of feed generation")
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="UTC timestamp of feed generation")
     recommendations: List[RecommendedJobItem] = Field(
         default_factory=list,
         description="Ordered list of recommended job items (DAY 1 root field name)"
@@ -84,3 +84,28 @@ class CandidateBehaviorHistory(BaseModel):
     applied_job_ids: List[str] = Field(default_factory=list, description="List of job IDs applied to by candidate")
     dismissed_job_ids: List[str] = Field(default_factory=list, description="List of job IDs explicitly dismissed/hidden by candidate")
     viewed_job_ids: List[str] = Field(default_factory=list, description="List of job IDs viewed by candidate")
+
+
+class RecommendationEventRequest(BaseModel):
+    """Payload for submitting a candidate interaction event."""
+    candidate_id: str = Field(..., min_length=1, description="Unique identifier of the candidate")
+    job_id: str = Field(..., min_length=1, description="Unique identifier of the job")
+    event_type: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "Interaction type: view, click, save, unsave, apply, dismiss, or undismiss; "
+            "accepted aliases are normalized."
+        ),
+    )
+    metadata: Optional[Dict[str, Any]] = Field(default=None, description="Optional interaction metadata")
+
+
+class RecommendationEventResponse(BaseModel):
+    """Response returned upon recording a candidate interaction event."""
+    success: bool = Field(default=True, description="Whether the event was successfully recorded")
+    candidate_id: str = Field(description="Identifier of the candidate")
+    job_id: str = Field(description="Identifier of the job")
+    event_type: str = Field(description="Recorded canonical interaction type")
+    recorded_at: datetime = Field(description="Timestamp when the event was recorded")
+    message: str = Field(default="Interaction recorded successfully.", description="Status message")

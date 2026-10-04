@@ -1,7 +1,9 @@
 from __future__ import annotations
+
 import json
 import logging
 import re
+from functools import lru_cache
 from pathlib import Path
 
 from ..models.taxonomy import SkillTaxonomyItem
@@ -9,7 +11,10 @@ from ..models.taxonomy import SkillTaxonomyItem
 logger = logging.getLogger(__name__)
 
 
-# Blacklist of common stopwords, noise words, URLs, and generic non-skill tokens
+# Terms that are never meaningful standalone skills.  This intentionally excludes
+# cross-profession terms (for example, management, law, clinical, backend, and
+# architecture): when the LLM explicitly extracts those labels, they are kept as
+# open-world skills unless the label itself is structural noise.
 STOPWORDS_BLACKLIST = {
     # English articles, prepositions, conjunctions, pronouns
     "a", "an", "the", "and", "or", "in", "on", "at", "to", "for", "with", "by", "from",
@@ -25,26 +30,26 @@ STOPWORDS_BLACKLIST = {
     "selected", "specializing", "focus", "focusing", "collaborated", "architected",
     "sophisticated", "accurate", "comprehensive", "intelligent", "high", "low", "real",
 
-    # Generic business and resume headers
-    "system", "systems", "features", "processes", "platform", "platforms", "projects",
-    "project", "experience", "education", "skills", "certifications", "summary",
+    # Resume headers and structural labels
+    "experience", "education", "skills", "certifications", "summary",
     "overview", "tools", "languages", "frameworks", "technologies", "responsibilities",
-    "activities", "courses", "coursework", "management", "lifecycle", "architecture",
-    "solutions", "workflows", "ecosystems", "decision", "decisions", "choices",
-    "document", "documents", "archiving", "notifications", "judicial", "legal",
-    "law", "firm", "health", "clinical", "patient", "nutritionists", "saudi", "arabia",
-    "egypt", "cairo", "mansoura", "live", "ar", "en", "stack", "fullstack", "full",
-    "backend", "frontend", "engineering", "programming", "databases", "development",
+    "activities", "courses", "coursework",
 
     # Noise and punctuation residues
     "etc", "eg", "ie", "nan", "null", "none", "true", "false", "string", "item", "items"
 }
 
 
+# Retained as a public compatibility export for callers that import it.  Generic
+# professional terms are not blacklisted; explicit extraction preserves them.
+LEGITIMATE_EXPLICIT_SKILLS: frozenset[str] = frozenset()
+
+
 class TaxonomyManager:
     """
     Manages canonical skills taxonomy, aliases, and normalizations for SkillMatch.
-    Ensures all extracted skills map strictly to standard skill IDs and filters out garbage noise.
+    Resolves known name-level aliases and filters structural noise while preserving
+    unknown explicit skills without assigning a taxonomy ID.
     """
 
     def __init__(self, seed_file_path: str | Path | None = None):
@@ -73,7 +78,7 @@ class TaxonomyManager:
                 path_obj = resolved
 
         if path_obj.exists():
-            with open(path_obj, "r", encoding="utf-8") as f:
+            with open(str(path_obj), "r", encoding="utf-8") as f:
                 data = json.load(f)
                 for item in data:
                     skill = SkillTaxonomyItem(**item)
@@ -81,9 +86,8 @@ class TaxonomyManager:
             logger.info(f"Loaded {len(self._by_id)} canonical skills from taxonomy seed '{path_obj}'")
         else:
             logger.warning(
-                f"Taxonomy seed file not found at '{file_path}' (resolved: '{path_obj}'). Loading fallback seed."
+                f"Taxonomy seed file not found at '{file_path}' (resolved: '{path_obj}'). Starting with empty taxonomy."
             )
-            self._load_fallback_seed()
 
 
     def register_skill(self, skill: SkillTaxonomyItem) -> None:
@@ -117,21 +121,57 @@ class TaxonomyManager:
         cleaned = re.sub(r"\s+", " ", cleaned)
         return cleaned.strip()
 
-    def is_blacklisted(self, raw_name: str) -> bool:
-        """Checks if a string is a stopword, URL, punctuation noise, or purely numerical."""
+    @staticmethod
+    def clean_skill_label(text: str) -> str:
+        """Remove list punctuation without damaging balanced punctuation in a skill label."""
+        if not isinstance(text, str):
+            return ""
+
+        cleaned = re.sub(r"^[•\u2022\u25e6*\-]+\s*", "", text.strip())
+        cleaned = re.sub(r"[,;:]+$", "", cleaned).rstrip()
+        pairs = {")": "(", "]": "[", "}": "{"}
+
+        while cleaned and cleaned[-1] in pairs:
+            closing = cleaned[-1]
+            if cleaned.count(closing) <= cleaned.count(pairs[closing]):
+                break
+            cleaned = cleaned[:-1].rstrip()
+
+        return cleaned
+
+    def is_blacklisted(self, raw_name: str, is_explicit: bool = False) -> bool:
+        """Checks structural noise; ``is_explicit`` is retained for caller compatibility."""
         if not raw_name:
             return True
 
-        cleaned = self._clean_string(raw_name)
+        raw_trimmed = raw_name.strip()
+        if not raw_trimmed or len(raw_trimmed) < 2:
+            return True
+
+        # Reject standalone emails
+        if "@" in raw_trimmed and re.search(r"[\w\.-]+@[\w\.-]+\.\w+", raw_trimmed):
+            return True
+
+        # Reject URLs or domain links
+        lower_raw = raw_trimmed.lower()
+        if (
+            lower_raw.startswith(("http://", "https://", "www."))
+            or "://" in lower_raw
+            or re.search(r"\b\w+\.(?:com|org|net|io|sa|edu|gov)(?:/|\s|$)", lower_raw)
+        ):
+            return True
+
+        cleaned = self._clean_string(raw_trimmed)
         if not cleaned or len(cleaned) < 2:
             return True
 
-        # Reject URLs or file paths
-        if any(indicator in cleaned for indicator in ["http", "://", ".com", ".sa", ".org", ".net", ".io", "www.", "/"]):
-            return True
-
-        # Purely numeric or single characters
-        if re.match(r"^\d+$", cleaned) or len(cleaned) <= 1:
+        # Purely numeric, punctuation-only, or single-character noise.
+        # C++, C#, and .NET remain valid because they contain letters.
+        if (
+            re.fullmatch(r"\d[\d., -]*", cleaned)
+            or not any(character.isalpha() for character in cleaned)
+            or len(cleaned) <= 1
+        ):
             return True
 
         # Exact match in blacklist
@@ -198,45 +238,49 @@ class TaxonomyManager:
         """
         Returns (skill_id, canonical_name, category).
         If strict=True: returns (None, None, None) if not found in taxonomy or blacklisted.
-        If strict=False: creates a normalized slug only if not blacklisted.
+        Unknown skills never receive synthetic taxonomy IDs.  Call resolve() for
+        open-world extraction, where an unknown explicit label is preserved.
         """
         matched = self.find_skill(raw_name)
         if matched:
             return matched.skill_id, matched.canonical_name, matched.category
 
-        if strict or self.is_blacklisted(raw_name):
-            return None, None, None
+        return None, None, None
 
-        # Filter out multi-word sentence fragments or feature descriptions
-        words = raw_name.strip().split()
-        if len(words) > 2 or len(raw_name) > 25:
-            return None, None, None
+    def resolve(self, raw_skill: str) -> tuple[str | None, str]:
+        """
+        Non-destructive resolution for open-world skill extraction.
+        Returns (skill_id, canonical_name).
 
-        # Non-strict fallback for validated technical entities only
-        clean_id = self._clean_string(raw_name).replace(" ", "_").replace(".", "_").replace("+", "p").replace("#", "sharp")
-        clean_id = re.sub(r"[^\w_]", "", clean_id)
-        if len(clean_id) < 2:
-            return None, None, None
+        KNOWN:
+            -> (canonical skill_id, canonical name)
+        UNKNOWN:
+            -> (None, cleaned original name)
 
-        skill_id = f"skill_{clean_id}"
-        canonical_name = raw_name.strip().title()
-        category = "Tools"
-        return skill_id, canonical_name, category
+        Taxonomy lookup failure never drops the skill.
+        Pure stopwords, URLs, and numeric noise return (None, "").
+        """
+        if not raw_skill or not raw_skill.strip():
+            return None, ""
+
+        if self.is_blacklisted(raw_skill, is_explicit=True):
+            return None, ""
+
+        matched = self.find_skill(raw_skill)
+        if matched:
+            return matched.skill_id, matched.canonical_name
+
+        cleaned = self.clean_skill_label(raw_skill)
+        if not cleaned or len(cleaned) < 2 or self.is_blacklisted(cleaned, is_explicit=True):
+            return None, ""
+
+        return None, cleaned
 
     def get_all_skills(self) -> list[SkillTaxonomyItem]:
         return list(self._by_id.values())
 
-    def _load_fallback_seed(self) -> None:
-        """Default seed if JSON file is not found."""
-        defaults = [
-            {"skill_id": "skill_python", "canonical_name": "Python", "category": "Programming Languages", "aliases": ["Python 3"]},
-            {"skill_id": "skill_sql", "canonical_name": "SQL", "category": "Databases", "aliases": ["PostgreSQL", "MySQL"]},
-            {"skill_id": "skill_machine_learning", "canonical_name": "Machine Learning", "category": "AI & Machine Learning", "aliases": ["ML"]},
-            {"skill_id": "skill_llms", "canonical_name": "Large Language Models", "category": "AI & Machine Learning", "aliases": ["LLMs", "LLM"]},
-            {"skill_id": "skill_react", "canonical_name": "React", "category": "Frameworks", "aliases": ["React.js"]},
-            {"skill_id": "skill_fastapi", "canonical_name": "FastAPI", "category": "Frameworks", "aliases": ["FastAPI Framework"]},
-            {"skill_id": "skill_docker", "canonical_name": "Docker", "category": "DevOps", "aliases": []},
-            {"skill_id": "skill_git", "canonical_name": "Git", "category": "Tools", "aliases": ["GitHub"]},
-        ]
-        for item in defaults:
-            self.register_skill(SkillTaxonomyItem(**item))
+
+@lru_cache(maxsize=4)
+def get_taxonomy_manager(seed_file_path: str | Path | None = None) -> TaxonomyManager:
+    """Returns a cached, process-wide singleton TaxonomyManager instance."""
+    return TaxonomyManager(seed_file_path=seed_file_path)

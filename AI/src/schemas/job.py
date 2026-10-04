@@ -1,9 +1,13 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 from pydantic import BaseModel, Field
 
+from src.job_extractor.models import JobRequirementProfile
+
+
 class SkillRequirement(BaseModel):
+    skill_id: Optional[str] = Field(default=None, description="Stable Skill Registry identity when resolved")
     skill_name: str = Field(description="Name of the required skill or tool")
     proficiency: str = Field(default="Intermediate", description="Expected proficiency level (e.g., Basic, Intermediate, Advanced, Expert)")
     is_critical: bool = Field(default=False, description="Whether this skill is a non-negotiable core requirement")
@@ -18,9 +22,9 @@ class SkillRequirement(BaseModel):
         if isinstance(item, str):
             return cls(skill_name=item)
         if isinstance(item, dict):
-            # Support both 'name' and 'skill_name'
             name = item.get("skill_name") or item.get("name") or "Unknown"
             return cls(
+                skill_id=item.get("skill_id"),
                 skill_name=name,
                 proficiency=item.get("proficiency") or item.get("expected_proficiency") or "Intermediate",
                 is_critical=bool(item.get("is_critical", False)),
@@ -29,6 +33,7 @@ class SkillRequirement(BaseModel):
                 description=item.get("description"),
             )
         return cls(skill_name=str(item))
+
 
 class JobPosting(BaseModel):
     job_id: str = Field(description="Unique identifier for the job position")
@@ -56,8 +61,59 @@ class JobPosting(BaseModel):
     description_is_partial: bool = Field(default=False, description="Whether description is only a source snippet")
     required_skills: List[SkillRequirement] = Field(default=[], description="List of required technical and domain skills")
 
+
 class JobRequirementsPayload(BaseModel):
     job_id: Optional[str] = Field(default=None, description="Optional job ID")
     role_title: Optional[str] = Field(default=None, description="Title of the target role")
     skills: List[SkillRequirement] = Field(default=[], description="List of required skills and competencies")
     summary: Optional[str] = Field(default=None, description="High level summary of the job requirements")
+
+
+from src.job_extractor.models import JobRequirementProfile
+
+
+
+class JobAnalysisRequest(BaseModel):
+    """Request payload for POST /api/v1/jobs/analyze."""
+
+    job_description: str = Field(
+        ...,
+        min_length=50,
+        max_length=20_000,
+        description="Raw text of the job posting to analyze",
+        json_schema_extra={
+            "example": (
+                "We are looking for a Senior Backend Engineer with 5+ years of experience "
+                "in Python and FastAPI. Strong knowledge of PostgreSQL and Redis is required. "
+                "Experience with Docker and Kubernetes is a plus."
+            )
+        },
+    )
+    job_id: str | None = Field(
+        None,
+        description=(
+            "Optional UUID of an existing job record. "
+            "When provided, the extracted profile is upserted into the jobs table."
+        ),
+        json_schema_extra={"example": "550e8400-e29b-41d4-a716-446655440000"},
+    )
+
+
+class JobAnalysisResponse(BaseModel):
+    """Response payload for POST /api/v1/jobs/analyze."""
+
+    job_id: str | None = Field(
+        None,
+        description="Echo of the job_id supplied in the request, or null if none was provided",
+    )
+    profile: JobRequirementProfile = Field(
+        ...,
+        description="Structured job requirement profile extracted from the job description",
+    )
+    persisted: bool = Field(
+        ...,
+        description=(
+            "True if the profile was successfully upserted into the jobs table. "
+            "False when job_id was not provided or the record was not found in DB."
+        ),
+    )

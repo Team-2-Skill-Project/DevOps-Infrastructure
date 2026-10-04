@@ -13,7 +13,6 @@ from typing import Any
 
 from pydantic import ValidationError
 
-from src.core.config import settings
 from src.core.llm import get_llm, parse_json_response
 
 from .models import JobRequirementProfile, RawSkillItem
@@ -33,21 +32,53 @@ class JobLLMExtractor:
     def __init__(self, llm=None):
         self.llm = llm
 
-    def _llm_available(self) -> bool:
-        if self.llm is not None and hasattr(self.llm, "is_available"):
-            return bool(self.llm.is_available())
+    def _get_active_llm(self):
         if self.llm is not None:
-            return True
-        llm_settings = settings.get_llm_settings()
-        return bool(llm_settings.api_key) or bool(llm_settings.base_url)
+            if hasattr(self.llm, "is_available") and not self.llm.is_available():
+                raise ValueError(
+                    "LLM service is not configured. Set LLM_PROVIDER, LLM_MODEL, and LLM_API_KEY."
+                )
+            return self.llm
+        try:
+            return get_llm()
+        except Exception as exc:
+            raise ValueError(
+                f"LLM service is not configured. Set LLM_PROVIDER, LLM_MODEL, and LLM_API_KEY. ({exc})"
+            ) from exc
+
+    @staticmethod
+    def _extract_text_content(content: Any) -> str:
+        """Extract textual content in original order from LLM response or content blocks."""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts: list[str] = []
+            for block in content:
+                if isinstance(block, str):
+                    parts.append(block)
+                elif isinstance(block, dict):
+                    if block.get("type") == "text" and "text" in block:
+                        parts.append(str(block["text"]))
+                    elif "text" in block:
+                        parts.append(str(block["text"]))
+                elif hasattr(block, "text"):
+                    parts.append(str(getattr(block, "text")))
+                elif hasattr(block, "content"):
+                    parts.append(str(getattr(block, "content")))
+            return "".join(parts)
+        return str(content) if content is not None else ""
 
     def _generate_json(self, prompt: str, system_prompt: str):
-        if self.llm is not None and hasattr(self.llm, "generate_json"):
-            return self.llm.generate_json(prompt=prompt, system_prompt=system_prompt)
-        if self.llm is None:
-            self.llm = get_llm()
-        response = self.llm.invoke([("system", system_prompt), ("user", prompt)])
-        return parse_json_response(str(getattr(response, "content", response)))
+        active_llm = self._get_active_llm()
+        if hasattr(active_llm, "generate_json"):
+            result = active_llm.generate_json(prompt=prompt, system_prompt=system_prompt)
+            if isinstance(result, str):
+                return parse_json_response(result)
+            return result
+        response = active_llm.invoke([("system", system_prompt), ("user", prompt)])
+        raw_content = getattr(response, "content", response)
+        text = self._extract_text_content(raw_content)
+        return parse_json_response(text)
 
     def extract(self, job_description: str) -> dict[str, Any]:
         """
@@ -55,15 +86,9 @@ class JobLLMExtractor:
         raw validated dict (pre-normalization).
 
         Raises:
-            ValueError: if the LLM is unavailable, returns invalid JSON,
+            ValueError: if the LLM is unconfigured, returns invalid JSON,
                         or fails Pydantic schema validation.
         """
-        if not self._llm_available():
-            raise ValueError(
-                "LLM service is not available. "
-                "Configure a valid LLM provider API key (GROQ_API_KEY, GEMINI_API_KEY, etc.)."
-            )
-
         system_prompt, user_prompt = build_prompt(job_description)
 
         try:
@@ -71,14 +96,34 @@ class JobLLMExtractor:
                 prompt=user_prompt,
                 system_prompt=system_prompt,
             )
+        except ValueError:
+            raise
         except Exception as e:
             logger.error("LLM call failed during job description extraction: %s", e, exc_info=True)
             raise ValueError(f"LLM extraction failed: {e}") from e
 
         if not isinstance(raw_result, dict):
-            raise ValueError(
-                f"LLM returned unexpected type {type(raw_result).__name__}; expected a JSON object."
+            logger.warning(
+                "LLM returned unexpected type %s (expected JSON object); attempting one technical retry...",
+                type(raw_result).__name__,
             )
+            try:
+                retry_result = self._generate_json(
+                    prompt=user_prompt,
+                    system_prompt=system_prompt,
+                )
+                if isinstance(retry_result, dict):
+                    raw_result = retry_result
+                else:
+                    raise ValueError(
+                        f"LLM returned unexpected type {type(retry_result).__name__}; expected a JSON object."
+                    )
+            except ValueError:
+                raise
+            except Exception as e:
+                raise ValueError(
+                    f"LLM returned unexpected type {type(raw_result).__name__}; expected a JSON object."
+                ) from e
 
         # Validate the raw dict partially — skill lists are validated later after normalization.
         # We do a lenient pass here: unknown fields are ignored, missing optionals get defaults.

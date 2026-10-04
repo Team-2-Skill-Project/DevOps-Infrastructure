@@ -7,19 +7,15 @@ and adds the feature-service settings behind one shared ``settings`` object.
 """
 
 import os
-import logging
 import warnings
 from functools import lru_cache
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import ClassVar, overload
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 load_dotenv()
-
-logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -42,27 +38,16 @@ def resolve_taxonomy_path(raw_path: str | None = None) -> str:
 class LLMSettings(BaseModel):
     """Single canonical LLM configuration consumed across all features."""
 
-    provider: str = Field(default="gemini")
+    provider: str | None = Field(default=None)
     api_key: str | None = Field(default=None)
-    model_name: str = Field(default="gemini-3.5-flash")
+    model_name: str | None = Field(default=None)
     base_url: str | None = Field(default=None)
     temperature: float = Field(default=0.0)
     max_tokens: int = Field(default=4096)
     timeout: float = Field(default=60.0)
     max_retries: int = Field(default=2)
 
-    SUPPORTED_PROVIDERS: ClassVar[set[str]] = {
-        "gemini",
-        "google",
-        "openai",
-        "groq",
-        "anthropic",
-        "mistral",
-        "deepseek",
-        "ollama",
-        "vllm",
-        "custom",
-    }
+    SUPPORTED_PROVIDERS: ClassVar[set[str]] = {"gemini", "google", "openai", "groq"}
 
     @classmethod
     def validate_provider(cls, provider: str) -> str:
@@ -76,45 +61,15 @@ class LLMSettings(BaseModel):
     @classmethod
     def load_from_env(cls) -> "LLMSettings":
         """Load unified LLM settings from environment variables."""
-        load_dotenv(override=True)
-        provider = (
-            os.getenv("LLM_PROVIDER")
-            or ("openai" if os.getenv("OPENAI_API_KEY") and not os.getenv("GEMINI_API_KEY") else "gemini")
-        ).lower().strip()
+        load_dotenv(override=False)
+        provider_raw = os.getenv("LLM_PROVIDER")
+        provider = provider_raw.strip().lower() if provider_raw and provider_raw.strip() else None
 
-        provider_keys = {
-            "gemini": os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"),
-            "google": os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"),
-            "openai": os.getenv("OPENAI_API_KEY"),
-            "groq": os.getenv("GROQ_API_KEY"),
-            "anthropic": os.getenv("ANTHROPIC_API_KEY"),
-        }
-        # LLM_API_KEY is the intentional generic escape hatch. Provider-specific
-        # variables are consulted only for the selected provider.
-        api_key = os.getenv("LLM_API_KEY") or provider_keys.get(provider) or None
+        api_key = os.getenv("LLM_API_KEY") or None
         if api_key:
             api_key = api_key.strip()
-
-        model_name = (
-            os.getenv("LLM_MODEL")
-            or os.getenv("LLM_MODEL_NAME")
-            or "gemini-3.5-flash"
-        ).strip()
-        if os.getenv("LLM_MODEL_NAME") and not os.getenv("LLM_MODEL"):
-            warnings.warn(
-                "LLM_MODEL_NAME is deprecated; use LLM_MODEL instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        # If model_name was supplied as 'provider/model', extract both cleanly
-        if "/" in model_name:
-            prefix_prov, clean_model = model_name.split("/", 1)
-            if not os.getenv("LLM_PROVIDER"):
-                provider = prefix_prov.lower().strip()
-                model_name = clean_model.strip()
-            elif prefix_prov.lower().strip() == provider:
-                model_name = clean_model.strip()
+        model_raw = os.getenv("LLM_MODEL")
+        model_name = model_raw.strip() if model_raw and model_raw.strip() else None
 
         try:
             temperature = float(os.getenv("LLM_TEMPERATURE", "0.0"))
@@ -132,9 +87,9 @@ class LLMSettings(BaseModel):
             timeout = 60.0
 
         try:
-            max_retries = int(os.getenv("LLM_MAX_RETRIES", "2"))
+            max_retries = int(os.getenv("LLM_MAX_RETRIES", "5"))
         except ValueError:
-            max_retries = 2
+            max_retries = 5
 
         base_url = os.getenv("LLM_BASE_URL")
         if base_url:
@@ -178,6 +133,8 @@ class AppSettings(BaseModel):
     enable_api_key_auth: bool = Field(default=False)
     rate_limit_per_minute: int = Field(default=60, ge=1)
     enable_rate_limiting: bool = Field(default=True)
+    secret_key: str = Field(default="default_secret_key_change_in_production_12345")
+    access_token_expire_minutes: int = Field(default=60 * 24)
 
 
 class Settings(BaseModel):
@@ -198,7 +155,6 @@ class Settings(BaseModel):
 
     # Canonical LLM configuration. Runtime code must use this object.
     llm: LLMSettings = Field(default_factory=LLMSettings.load_from_env)
-    LLM_ALLOW_REQUEST_OVERRIDES: bool = False
 
     # Persistence and background processing.
     DATABASE_URL: str = str(BASE_DIR / "skillmatch.db")
@@ -209,20 +165,43 @@ class Settings(BaseModel):
     REDIS_MAX_CONNECTIONS: int = Field(default=20, ge=1)
     REDIS_SOCKET_TIMEOUT: float = Field(default=2.0, gt=0.0)
     REDIS_CONNECT_TIMEOUT: float = Field(default=2.0, gt=0.0)
+    RECOMMENDATION_CACHE_TTL_SECONDS: int = Field(default=600, ge=1)
     CELERY_BROKER_URL: str | None = None
     CELERY_RESULT_BACKEND: str | None = None
+    LOG_LEVEL: str = "INFO"
+    TAXONOMY_PATH: str = Field(default_factory=resolve_taxonomy_path)
 
-    # Endpoint protection and logging.
+    # Endpoint protection and rate limiting
     RATE_LIMIT_ENABLED: bool = True
     RATE_LIMIT_REQUESTS: int = Field(default=60, ge=1)
     RATE_LIMIT_WINDOW_SECONDS: int = Field(default=60, ge=1)
-    LOG_LEVEL: str = "INFO"
+    LLM_ALLOW_REQUEST_OVERRIDES: bool = False
+    SECRET_KEY: str = "default_secret_key_change_in_production_12345"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+
+    # Backward-compatible attribute aliases (used by CV service, security, and tests)
+    taxonomy_path: str = Field(default_factory=resolve_taxonomy_path)
+    api_key: str | None = None
+    enable_api_key_auth: bool = False
+    rate_limit_per_minute: int = Field(default=60, ge=1)
+    enable_rate_limiting: bool = True
+    secret_key: str = "default_secret_key_change_in_production_12345"
+    access_token_expire_minutes: int = 60 * 24
+    cors_allowed_methods: list[str] = Field(default_factory=lambda: ["GET", "POST", "OPTIONS"])
+    cors_allowed_headers: list[str] = Field(
+        default_factory=lambda: ["Content-Type", "Authorization", "X-API-Key", "Accept"]
+    )
+    cors_allow_credentials: bool = True
 
     @classmethod
     def from_env(cls) -> "Settings":
         """Build unified settings from environment variables."""
         llm_cfg = LLMSettings.load_from_env()
 
+        @overload
+        def env(name: str, default: str) -> str: ...
+        @overload
+        def env(name: str, default: None = None) -> str | None: ...
         def env(name: str, default: str | None = None) -> str | None:
             value = os.getenv(name)
             return value if value is not None else default
@@ -247,7 +226,30 @@ class Settings(BaseModel):
 
         origins_raw = env("CORS_ORIGINS") or env("CORS_ALLOWED_ORIGINS")
         origins = [item.strip() for item in origins_raw.split(",") if item.strip()] if origins_raw else None
+
+        methods_raw = env("CORS_ALLOWED_METHODS")
+        methods = [item.strip() for item in methods_raw.split(",") if item.strip()] if methods_raw else None
+
+        headers_raw = env("CORS_ALLOWED_HEADERS")
+        headers = [item.strip() for item in headers_raw.split(",") if item.strip()] if headers_raw else None
+
         database_url = env("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'skillmatch.db'}"
+
+        host = env("API_HOST", "127.0.0.1")
+        port = env_int("API_PORT", 8001)
+        environment = env("ENVIRONMENT", "development")
+        api_key = env("SERVICE_API_KEY") or env("API_KEY") or None
+        enable_api_key_auth = env_bool("ENABLE_API_KEY_AUTH", False)
+        rate_limit_enabled = env_bool("ENABLE_RATE_LIMITING", env_bool("RATE_LIMIT_ENABLED", True))
+        rate_limit_requests = env_int("RATE_LIMIT_PER_MINUTE", env_int("RATE_LIMIT_REQUESTS", 60))
+        secret_key = env("SECRET_KEY", "default_secret_key_change_in_production_12345")
+        access_token_expire_minutes = env_int("ACCESS_TOKEN_EXPIRE_MINUTES", 60 * 24)
+        cors_origins = origins or cls().CORS_ORIGINS
+        cors_methods = methods or getattr(cls(), "CORS_ALLOWED_METHODS", ["GET", "POST", "OPTIONS"])
+        cors_headers = headers or getattr(cls(), "CORS_ALLOWED_HEADERS", ["Content-Type", "Authorization", "X-API-Key", "Accept"])
+        cors_allow_credentials = env_bool("CORS_ALLOW_CREDENTIALS", True)
+        if cors_origins and "*" in cors_origins:
+            cors_allow_credentials = False
 
         return cls(
             PROJECT_NAME=env("PROJECT_NAME", "SkillMatch AI Services"),
@@ -259,19 +261,34 @@ class Settings(BaseModel):
             llm=llm_cfg,
             DATABASE_URL=database_url,
             JOOBLE_API_KEY=(env("JOOBLE_API_KEY") or None),
-            JOOBLE_API_BASE_URL=env("JOOBLE_API_BASE_URL", "https://eg.jooble.org/api") or "https://eg.jooble.org/api",
+            JOOBLE_API_BASE_URL=env("JOOBLE_API_BASE_URL", "https://eg.jooble.org/api"),
             JOOBLE_TIMEOUT=env_float("JOOBLE_TIMEOUT", 20.0),
             REDIS_URL=env("REDIS_URL", "redis://localhost:6379/0"),
             REDIS_MAX_CONNECTIONS=env_int("REDIS_MAX_CONNECTIONS", 20),
             REDIS_SOCKET_TIMEOUT=env_float("REDIS_SOCKET_TIMEOUT", 2.0),
             REDIS_CONNECT_TIMEOUT=env_float("REDIS_CONNECT_TIMEOUT", 2.0),
+            RECOMMENDATION_CACHE_TTL_SECONDS=env_int("RECOMMENDATION_CACHE_TTL_SECONDS", 600),
             CELERY_BROKER_URL=env("CELERY_BROKER_URL"),
             CELERY_RESULT_BACKEND=env("CELERY_RESULT_BACKEND"),
-            RATE_LIMIT_ENABLED=env_bool("RATE_LIMIT_ENABLED", True),
-            RATE_LIMIT_REQUESTS=env_int("RATE_LIMIT_REQUESTS", 60),
+            RATE_LIMIT_ENABLED=rate_limit_enabled,
+            RATE_LIMIT_REQUESTS=rate_limit_requests,
             RATE_LIMIT_WINDOW_SECONDS=env_int("RATE_LIMIT_WINDOW_SECONDS", 60),
+            SECRET_KEY=secret_key,
+            ACCESS_TOKEN_EXPIRE_MINUTES=access_token_expire_minutes,
             LOG_LEVEL=env("LOG_LEVEL", "INFO"),
+            TAXONOMY_PATH=resolve_taxonomy_path(env("TAXONOMY_PATH")) if env("TAXONOMY_PATH") else resolve_taxonomy_path(),
+            taxonomy_path=resolve_taxonomy_path(env("TAXONOMY_PATH")) if env("TAXONOMY_PATH") else resolve_taxonomy_path(),
+            api_key=api_key,
+            enable_api_key_auth=enable_api_key_auth,
+            rate_limit_per_minute=rate_limit_requests,
+            enable_rate_limiting=rate_limit_enabled,
+            secret_key=secret_key,
+            access_token_expire_minutes=access_token_expire_minutes,
+            cors_allowed_methods=cors_methods,
+            cors_allowed_headers=cors_headers,
+            cors_allow_credentials=cors_allow_credentials,
         )
+
 
     def parse_provider_and_model(
         self,
@@ -286,13 +303,11 @@ class Settings(BaseModel):
           3. Global configured LLM_PROVIDER from settings
         """
         canonical_llm = self.llm
-        target_model = (model_str or canonical_llm.model_name).strip()
+        raw_model = model_str or canonical_llm.model_name or "gemini-3.6-flash"
+        target_model = raw_model.strip()
 
         if provider_str:
             normalized_provider = provider_str.lower().strip()
-            # Strip only an explicit prefix for the selected provider. Some
-            # providers use a slash inside their model IDs (for example
-            # Groq's ``openai/gpt-oss-20b``), which must be preserved.
             prefix = f"{normalized_provider}/"
             if target_model.lower().startswith(prefix):
                 target_model = target_model[len(prefix):]
@@ -302,13 +317,15 @@ class Settings(BaseModel):
             prov, model = target_model.split("/", 1)
             return prov.lower().strip(), model.strip()
 
-        return canonical_llm.provider.lower().strip(), target_model
+        raw_provider = canonical_llm.provider or "gemini"
+        return raw_provider.lower().strip(), target_model
 
     def get_llm_settings(self) -> LLMSettings:
         """Return an LLMSettings instance matching the unified configuration."""
         return self.llm
 
 
+# Canonical global settings instance
 settings = Settings.from_env()
 
 
@@ -318,27 +335,6 @@ def get_llm_settings() -> LLMSettings:
     return settings.get_llm_settings()
 
 
-@lru_cache
-def get_app_settings() -> AppSettings:
-    """Return the original CV API settings object."""
-    raw_taxonomy = os.getenv("TAXONOMY_PATH", "")
-    origins_raw = os.getenv("CORS_ALLOWED_ORIGINS", "")
-    origins = [item.strip() for item in origins_raw.split(",") if item.strip()] if origins_raw else AppSettings().cors_allowed_origins
-    allow_credentials = os.getenv("CORS_ALLOW_CREDENTIALS", "true").lower() in {"true", "1", "yes", "on"}
-    if "*" in origins:
-        allow_credentials = False
-
-    return AppSettings(
-        host=os.getenv("API_HOST", "127.0.0.1"),
-        port=int(os.getenv("API_PORT", "8001")),
-        environment=os.getenv("ENVIRONMENT", "development"),
-        taxonomy_path=resolve_taxonomy_path(raw_taxonomy) if raw_taxonomy else resolve_taxonomy_path(),
-        cors_allowed_origins=origins,
-        cors_allowed_methods=[m.strip().upper() for m in os.getenv("CORS_ALLOWED_METHODS", "GET,POST,OPTIONS").split(",") if m.strip()],
-        cors_allowed_headers=[h.strip() for h in os.getenv("CORS_ALLOWED_HEADERS", "Content-Type,Authorization,X-API-Key,Accept").split(",") if h.strip()],
-        cors_allow_credentials=allow_credentials,
-        api_key=os.getenv("SERVICE_API_KEY") or os.getenv("API_KEY") or None,
-        enable_api_key_auth=os.getenv("ENABLE_API_KEY_AUTH", "false").lower() in {"true", "1", "yes", "on"},
-        rate_limit_per_minute=int(os.getenv("RATE_LIMIT_PER_MINUTE", "60")),
-        enable_rate_limiting=os.getenv("ENABLE_RATE_LIMITING", "true").lower() in {"true", "1", "yes", "on"},
-    )
+def get_app_settings() -> Settings:
+    """Return the unified application settings singleton (backward-compatibility alias)."""
+    return settings

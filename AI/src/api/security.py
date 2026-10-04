@@ -6,6 +6,7 @@ from fastapi import HTTPException, Request, Security, status
 from fastapi.security import APIKeyHeader
 
 from src.core.config import get_app_settings
+from src.core.security import get_client_ip
 
 # API Key header definition for OpenAPI docs
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -67,14 +68,8 @@ class SlidingWindowRateLimiter:
 rate_limiter = SlidingWindowRateLimiter()
 
 
-def get_client_identifier(request: Request) -> str:
-    """Extracts client IP, considering X-Forwarded-For when behind reverse proxies."""
-    forwarded_for = request.headers.get("X-Forwarded-For")
-    if forwarded_for:
-        return forwarded_for.split(",")[0].strip()
-    if request.client and request.client.host:
-        return request.client.host
-    return "127.0.0.1"
+# Canonical safe rate-limit client identity resolver from src.core.security
+get_client_identifier = get_client_ip
 
 
 async def verify_api_key(
@@ -102,6 +97,43 @@ async def verify_api_key(
             detail={"detail": "Invalid or missing API key.", "error_code": "UNAUTHORIZED"}
         )
 
+    return provided_key
+
+
+async def require_service_api_key(
+    request: Request,
+    api_key_header_val: str | None = Security(api_key_header),
+) -> str:
+    """Require the already-configured service key for internal write operations.
+
+    This service has no authenticated candidate principal yet.  Routes using
+    this dependency are therefore server-to-server integration points: the
+    caller (for example, Laravel) must authenticate and authorize the
+    candidate before forwarding the event.  Unlike ``verify_api_key``, this is
+    never disabled by the public-read API-key feature flag.
+    """
+    app_settings = get_app_settings()
+    configured_key = app_settings.api_key
+    if not configured_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "detail": "Interaction event ingestion is unavailable until SERVICE_API_KEY is configured.",
+                "error_code": "SERVICE_AUTH_NOT_CONFIGURED",
+            },
+        )
+
+    provided_key = api_key_header_val
+    if not provided_key:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            provided_key = auth_header[7:].strip()
+
+    if not provided_key or provided_key != configured_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"detail": "Invalid or missing service API key.", "error_code": "UNAUTHORIZED"},
+        )
     return provided_key
 
 
