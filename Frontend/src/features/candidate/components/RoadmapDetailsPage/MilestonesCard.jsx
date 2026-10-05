@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import MilestoneItem from "./MilestoneItem";
-import { MILESTONES } from "@/constants/milestonesMock";
+import { MILESTONES } from "@/features/candidate/shared/milestonesMock";
 
 export default function MilestonesCard({ milestones = MILESTONES }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -12,7 +14,7 @@ export default function MilestonesCard({ milestones = MILESTONES }) {
       className="mb-5 rounded-3xl border border-border bg-surface p-6 shadow-sm"
     >
       <h2 className="mb-4 font-display text-[15px] font-bold text-ink">
-        Milestones
+        {t("pages.roadmap.milestones")}
       </h2>
 
       <div className="relative ps-1">

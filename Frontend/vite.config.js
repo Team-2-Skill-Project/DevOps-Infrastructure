@@ -11,4 +11,14 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://skillmatch.iptvdemo.serv5group.com',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })
+

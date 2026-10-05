@@ -1,3 +1,6 @@
 node_modules
-dist
+.env.local
 .env
+PROJECT_CODEBASE_GUIDE.md
+AUTH_LOGIC_CONVENTION.md
+refactoring_guidelines.md

@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home2/iptvdemo/public_html/match-in.iptvdemo.serv5group.com/
+    - /bin/cp -R dist/. $DEPLOYPATH

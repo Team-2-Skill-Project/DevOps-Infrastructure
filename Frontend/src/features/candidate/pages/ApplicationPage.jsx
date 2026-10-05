@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import ApplicationDetailsDialog from "../components/ApplicationPage/ApplicationDetailsDialog";
 import ApplicationFilters from "../components/ApplicationPage/ApplicationFilters";
@@ -6,9 +7,10 @@ import ApplicationList from "../components/ApplicationPage/ApplicationList";
 import ApplicationStateViews from "../components/ApplicationPage/ApplicationStateViews";
 import ApplicationStats from "../components/ApplicationPage/ApplicationStats";
 import ApplicationToast from "../components/ApplicationPage/ApplicationToast";
-import { INITIAL_APPLICATIONS } from "@/constants/application";
+import { INITIAL_APPLICATIONS } from "@/features/candidate/shared/application";
 
 export default function ApplicationTracker() {
+  const { t } = useTranslation("dashboard");
   const [viewState, setViewState] = useState("loaded");
   const [applications, setApplications] = useState(INITIAL_APPLICATIONS);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,11 +73,10 @@ export default function ApplicationTracker() {
       <main className="max-w-270 mx-auto px-4 sm:px-5 py-6 sm:py-8">
         <div className="mb-7">
           <h1 className="font-dm-sans font-extrabold text-2xl sm:text-[26px] tracking-tight text-[#1B1C1A]">
-            Application Tracker
+            {t("pages.applicationTracker.title")}
           </h1>
           <p className="text-[13.5px] text-muted mt-1">
-            Every application you've sent, in one place — with its current stage
-            and next step.
+            {t("pages.applicationTracker.description")}
           </p>
         </div>
 

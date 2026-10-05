@@ -1,9 +1,11 @@
 import { AlertTriangle, Briefcase, RefreshCw, Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import ApplicationSkeleton from "@/components/layouts/skeleton/ApplicationSkeleton";
 
 export default function ApplicationStateViews({ viewState, onLoaded }) {
+  const { t } = useTranslation("dashboard");
   if (viewState === "loading") return <ApplicationSkeleton />;
 
   if (viewState === "empty") {
@@ -18,7 +20,7 @@ export default function ApplicationStateViews({ viewState, onLoaded }) {
           <Send className="w-7 h-7" />
         </div>
         <h2 className="font-dm-sans font-bold text-[20px] mb-2 text-[#1B1C1A]">
-          No applications yet
+          {t("pages.applicationStates.empty")}
         </h2>
         <p className="text-[13.5px] text-muted max-w-sm mx-auto mb-7 leading-relaxed">
           Once you apply to a role, it'll show up here with its status and every
@@ -45,7 +47,7 @@ export default function ApplicationStateViews({ viewState, onLoaded }) {
         <AlertTriangle className="w-7 h-7" />
       </div>
       <h2 className="font-dm-sans font-bold text-[20px] mb-2 text-[#1B1C1A]">
-        Couldn't load your applications
+        {t("pages.applicationStates.loadFailed")}
       </h2>
       <p className="text-[13.5px] text-muted max-w-sm mx-auto mb-7 leading-relaxed">
         Something went wrong on our end. Please try again.

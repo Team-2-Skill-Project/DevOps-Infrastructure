@@ -1,9 +1,11 @@
 import JobDetailsSkeleton from "@/components/layouts/skeleton/JobDetailsSkeleton";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowLeft, CircleAlert, RotateCcw, Search } from "lucide-react";
 
 export default function JobDetailsStateViews({ pageState, onStateChange }) {
+  const { t } = useTranslation("dashboard");
   return (
     <>
       {pageState === "loading" && <JobDetailsSkeleton />}
@@ -19,7 +21,7 @@ export default function JobDetailsStateViews({ pageState, onStateChange }) {
             <Search className="h-7 w-7 text-secondary" />
           </div>
           <h2 className="font-dm-sans text-3xl font-bold text-primary mb-2">
-            Job Post Not Found
+            {t("pages.jobDetails.notFound")}
           </h2>
           <p className="text-sm text-muted max-w-md mx-auto mb-7">
             This job posting may have been removed by the employer, or the link
@@ -83,7 +85,7 @@ export default function JobDetailsStateViews({ pageState, onStateChange }) {
             <CircleAlert className="h-7 w-7 text-error" />
           </div>
           <h2 className="font-dm-sans text-3xl font-bold text-primary mb-2">
-            Unable to Load Job Details
+            {t("pages.jobDetails.loadFailed")}
           </h2>
           <p className="text-sm text-muted max-w-md mx-auto mb-2">
             A network error occurred while fetching this role. Your connection

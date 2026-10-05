@@ -2,15 +2,20 @@ import React from "react";
 import AuthLayout from "@/components/layouts/AuthLayout";
 import { BriefcaseBusiness } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import LoginFooter from "@/features/auth/components/LoginPage/LoginFooter";
 import LoginForm from "@/features/auth/components/LoginPage/LoginForm";
+import { useLoginMutation } from "@/features/auth/hooks/useLoginMutation";
+import { useLocalizedPath } from "@/utils/routes";
 
 export default function LoginPage() {
   const { t } = useTranslation("common");
+  const navigate = useNavigate();
+  const localizedPath = useLocalizedPath();
 
-  const handleLogin = (data) => {
-    console.log("Login submitted:", data);
-  };
+  const { mutate, isPending, isError, error } = useLoginMutation({
+    onAuthenticated: () => navigate(localizedPath("/dashboard"), { replace: true }),
+  });
 
   return (
     <AuthLayout
@@ -24,7 +29,12 @@ export default function LoginPage() {
       }}
       footer={<LoginFooter />}
     >
-      <LoginForm onSubmit={handleLogin} />
+      <LoginForm
+        onSubmit={mutate}
+        isPending={isPending}
+        serverError={isError ? error?.message : null}
+      />
     </AuthLayout>
   );
 }
+

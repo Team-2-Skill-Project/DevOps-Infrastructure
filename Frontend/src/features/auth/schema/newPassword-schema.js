@@ -1,22 +1,25 @@
 import { z } from "zod";
+import { validationMessage } from "@/components/shared/i18n/validationMessage";
 
 export const newPasswordSchema = z.object({
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
+    .min(8, { error: validationMessage("passwordMin", { count: 8 }) })
     .regex(/[A-Z]/, {
-      message: "Password must contain at least one uppercase letter",
+      error: validationMessage("passwordUppercase"),
     })
     .regex(/[a-z]/, {
-      message: "Password must contain at least one lowercase letter",
+      error: validationMessage("passwordLowercase"),
     })
-    .regex(/[0-9]/, { message: "Password must contain at least one number" })
+    .regex(/[0-9]/, { error: validationMessage("passwordNumber") })
     .regex(/[^A-Za-z0-9]/, {
-      message: "Password must contain at least one special character",
+      error: validationMessage("passwordSpecial"),
     })
     ,
-  confirmPassword: z.string().min(1, "Please confirm your password"),
+  confirmPassword: z
+    .string()
+    .min(1, { error: validationMessage("confirmPasswordRequired") }),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match — please check and try again.",
+  error: validationMessage("passwordMismatch"),
   path: ["confirmPassword"],
 });

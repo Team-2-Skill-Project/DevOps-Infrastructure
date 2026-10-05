@@ -4,7 +4,7 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
-    "apply": "test",
+    "apply": "Apply",
     "signIn": "Sign In",
     "postJob": "Post a Job"
   },
@@ -20,6 +20,139 @@
     "roadmap": "Roadmap",
     "mentor": "AI Mentor",
     "profile": "Profile"
+  },
+  "notFound": {
+    "eyebrow": "Error 404",
+    "title": "This page could not be found",
+    "description": "The link may be incorrect, or the page may have moved somewhere else.",
+    "home": "Back to home",
+    "back": "Go back"
+  },
+  "ui": {
+    "editJob": {
+      "jobs": "Jobs", "edit": "Edit", "title": "Edit Job", "cancel": "Cancel", "reset": "Reset",
+      "saving": "Saving...", "saveChanges": "Save Changes", "resetChanges": "Reset Changes",
+      "updated": "Last updated · {{time}} ago", "by": "by"
+    },
+    "jobInfo": {
+      "title": "Job Information", "description": "Core details visible to candidates", "jobTitle": "Job Title",
+      "company": "Company", "selectCompany": "Select company", "linkedCompany": "Linked company account",
+      "source": "Source", "optional": "(optional)", "selectSource": "Select source"
+    },
+    "jobDescription": { "title": "Description", "summary": "Main job overview", "field": "Job Description" },
+    "responsibilities": {
+      "title": "Key Responsibilities", "description": "Outline the core duties expected for this position.",
+      "placeholder": "Add a new responsibility...", "add": "Add"
+    },
+    "skills": {
+      "title": "Skills", "description": "Required vs preferred", "required": "Required Skills",
+      "preferred": "Preferred Skills", "optional": "(optional)", "placeholder": "Add skill and press Enter"
+    },
+    "locationWork": {
+      "title": "Location & Work Details", "location": "Location", "experience": "Experience Level",
+      "selectLevel": "Select level", "workMode": "Work Mode", "jobType": "Job Type",
+      "onSite": "On-site", "hybrid": "Hybrid", "remote": "Remote", "junior": "Junior",
+      "midLevel": "Mid-Level", "senior": "Senior", "lead": "Lead", "fullTime": "Full-time",
+      "partTime": "Part-time", "contract": "Contract", "internship": "Internship"
+    },
+    "status": {
+      "title": "Status", "description": "Visibility & lifecycle", "jobStatus": "Job Status",
+      "open": "Open", "draft": "Draft", "closed": "Closed", "suspended": "Suspended",
+      "auditStart": "All changes made by Super Admin are automatically recorded in",
+      "auditLogs": "Audit Logs", "auditEnd": "(who, what, when). Status changes and field updates are fully traceable."
+    },
+    "jobApplication": {
+      "title": "Job Application", "at": "at", "close": "Close", "method": "Method", "source": "Source",
+      "correctErrors": "Please correct the highlighted errors before submitting.", "additionalNote": "Additional Note",
+      "optional": "(Optional)", "notePlaceholder": "Add a short note for the hiring team — why are you a great fit?",
+      "workAuthorization": "Are you legally authorized to work in this location?", "yes": "Yes", "no": "No", "selectAnswer": "Select an answer",
+      "sponsorship": "Require Sponsorship", "earliestStart": "Earliest Start Date", "cancel": "Cancel",
+      "submit": "Submit Application", "applicantDetails": "Applicant Details", "fullName": "Full Name",
+      "email": "Email Address", "profileFetched": "Fetched from your profile —", "editProfile": "Edit Profile",
+      "resume": "Select Resume (CV)", "uploadCv": "Upload another CV", "required": "This field is required by the employer.",
+      "selectResumeRequired": "Please select a resume to continue.", "startDateRequired": "Please select your earliest start date."
+    },
+    "notifications": { "title": "Notifications", "markAllRead": "Mark all read", "viewAll": "View all notifications" },
+    "applicationFilters": {
+      "search": "Search by job title or company…", "recent": "Most recent update", "date": "Application date", "match": "Match level (high–low)"
+    },
+    "notificationGroups": { "today": "TODAY", "earlier": "EARLIER" },
+    "profileCompletion": { "title": "Profile Completion", "cvLink": "Manage your CV file" },
+    "savedJobCard": {
+      "bonusSkills": "bonus skills", "description": "Description", "responsibilities": "Key Responsibilities",
+      "source": "Source", "method": "Method", "experience": "Experience", "notePlaceholder": "Write a private note or salary target...",
+      "cancel": "Cancel", "saveNote": "Save Note", "candidateNote": "Candidate Note", "edit": "Edit",
+      "addPlaceholder": "+ Add a private note or salary target for this position...", "addNote": "Add Note",
+      "hideDetails": "Hide Details", "viewDetails": "View Details", "applied": "Applied", "applyFast": "Apply Fast Track"
+    },
+    "applicationDetailHero": {
+      "applied": "Applied", "updated": "Updated", "source": "Source", "underReview": "Under Review", "match": "match",
+      "viewJob": "View Job", "viewCv": "View CV", "openSource": "Open Source", "askMentor": "Ask Mentor",
+      "addNote": "Add Note", "addToRoadmap": "Add to Roadmap", "withdraw": "Withdraw"
+    },
+    "roadmapPhase": {
+      "phase": "PHASE {{current}} OF {{total}}", "goal": "Goal:", "askMentor": "Ask Mentor",
+      "completion": "COMPLETION", "tasksComplete": "{{completed}} of {{total}} tasks complete"
+    },
+    "pagination": { "page": "Page {{page}} of {{total}}", "previous": "Previous", "next": "Next" },
+    "adminActivity": { "viewAll": "View all" },
+    "onboarding": {
+      "previous": "Previous", "continue": "Continue", "popularTitles": "Popular job titles in today's market:",
+      "jobTitle": {
+        "title": "What job title are you looking for?", "subtitle": "We'll customize AI algorithms to suggest jobs most relevant to your career path.",
+        "inputLabel": "Target Job Title", "placeholder": "Search for a job title...",
+        "suggestions": ["Product Manager", "Frontend Developer", "UX/UI Designer", "Data Engineer", "Digital Marketing Specialist"]
+      },
+      "jobType": {
+        "title": "What type of job are you looking for?", "subtitle": "Select the employment types that fit your current availability.",
+        "inputLabel": "Job Type", "placeholder": "Select job type...", "suggestionsLabel": "Employment types:",
+        "suggestions": ["Full-time", "Part-time", "Contract", "Freelance", "Internship"]
+      },
+      "workStyle": {
+        "title": "What is your preferred work style?", "subtitle": "Choose how and where you prefer to deliver your daily work.",
+        "inputLabel": "Work Style", "placeholder": "Select work style...", "suggestionsLabel": "Work styles:",
+        "suggestions": ["On-site", "Remote", "Hybrid"]
+      },
+      "location": {
+        "title": "Where would you like to work?", "subtitle": "Specify your preferred target location or city.",
+        "inputLabel": "Location / City", "placeholder": "Enter city or country...", "suggestionsLabel": "Popular locations:",
+        "suggestions": ["Cairo, Egypt", "Riyadh, KSA", "Dubai, UAE", "Remote Worldwide"]
+      },
+      "experience": {
+        "title": "What is your experience level?", "subtitle": "Help us match you with roles that match your expertise.",
+        "inputLabel": "Experience Level", "placeholder": "Select experience level...", "suggestionsLabel": "Experience levels:",
+        "suggestions": ["Entry Level / Junior", "Mid Level", "Senior", "Lead / Manager"]
+      },
+      "goals": {
+        "title": "What are your primary career goals?", "subtitle": "Tell us what matters most to you in your next move.",
+        "inputLabel": "Primary Goal", "placeholder": "Select or type your goal...", "suggestionsLabel": "Career goals:",
+        "suggestions": ["Higher Salary", "Career Growth", "Better Work-Life Balance", "Learning New Tech"]
+      }
+    },
+    "roadmapTask": {
+      "targetSkill": "TARGET SKILL: {{skill}}", "description": "DESCRIPTION", "why": "WHY THIS TASK MATTERS",
+      "outcome": "EXPECTED OUTCOME", "completionState": "COMPLETION STATE", "completed": "Completed",
+      "notCompleted": "Not completed yet", "askMentor": "Ask Mentor", "undo": "Undo completion", "markComplete": "Mark as complete"
+    },
+    "savedJobs": {
+      "allSaved": "All Saved", "highFit": "High Fit (≥75%)", "freshAdded": "Fresh Added", "applied": "Applied",
+      "sortBestMatch": "Sort: Best Match"
+    },
+    "chat": {
+      "mentor": "AI Career Mentor", "description": "Answers using your profile, CV, jobs, and roadmap", "online": "Online",
+      "inputPlaceholder": "Ask about your profile, a job, or your roadmap…", "grounded": "Mentor responses are grounded in your account data — not generic advice.",
+      "couldNotRespond": "Couldn't get a response", "responseError": "Something went wrong on our end. Your question wasn't lost.", "retry": "Retry",
+      "noTarget": "No target role set yet.", "generalHelp": "I can still help with general profile questions, but for role-specific advice,",
+      "setTarget": "set a target role", "orOpenSaved": "or open a saved job first.",
+      "promptWeek": "What should I focus on this week?", "promptWeakMatch": "Why am I a weak match for this job?",
+      "promptSkill": "Which skill should I learn first?", "promptProfile": "How can I improve my profile for this role?",
+      "promptSavedJob": "Which saved job should I prioritize?", "demoQuestion": "Why am I a weak match for the Vercel frontend role?",
+      "demoAnswer": "Your match score for that role is 98%, so you're actually a strong candidate overall. The one gap pulling it down is System Design — it's listed as a core requirement and isn't confirmed on your profile yet. Everything else (React, TypeScript, Next.js) lines up well.",
+      "demoQuestionWeek": "What should I focus on this week?", "demoAnswerWeek": "You're 75% through Phase 1 of your roadmap — one task left. Finishing it closes out the System Design foundations before you move into GraphQL and testing next week.",
+      "sourceJob": "Senior Frontend Engineer · Vercel", "sourceSkillGap": "Skill gap: System Design", "sourceTask": "Task: Design a rate limiter",
+      "sourcePhase": "Phase 1: Foundations", "responsePrefix": "Thanks for asking! Here's some AI-grounded guidance based on your profile and saved jobs. This is a demo response for: {{question}}",
+      "relatedJob": "Related job match", "retryResponse": "Here's the response after retrying. Everything looks good now!", "emptyTitle": "Ask your Mentor anything"
+    }
   },
   "home": {
     "aiMentor": {
@@ -231,6 +364,13 @@
           "autofilled": "Auto-filled",
           "dashboard": "Go to dashboard"
         },
+        "errors": {
+          "invalidOrExpired": "This code is invalid or has expired. Request a new one and try again.",
+          "noAccount": "We couldn't find an account with that email address. Please check it or create an account.",
+          "sessionExpired": "Your session has expired. Please start the password reset again.",
+          "tooManyAttempts": "Too many attempts. Please wait a moment before trying again.",
+          "serverUnavailable": "We couldn't reach the server. Check your connection and try again."
+        },
         "forgot": {
           "back": "Back to Login",
           "badge": "Smart Career Platform",
@@ -244,7 +384,12 @@
           "success": "A password reset link has been sent to your email.",
           "failure": "Server connection failed. Please try again later.",
           "security": "Advanced protection for your professional data. Saved with highest certified digital identity security standards.",
-          "invalidEmail": "Please enter a valid email address."
+          "invalidEmail": "Please enter a valid email address.",
+          "otpTitle": "Verify your email",
+          "otpDescription": "We sent a 6-digit code to {{email}}. Enter it below to reset your password.",
+          "otpBack": "Back to reset request",
+          "otpMissingEmail": "This reset request has expired. Request a new link to continue.",
+          "otpRequestNew": "Request a new link"
         },
         "reset": {
           "back": "Back to Login",

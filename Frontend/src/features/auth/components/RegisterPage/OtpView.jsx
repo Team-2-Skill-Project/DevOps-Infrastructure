@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { Loader2 } from "lucide-react";
 
 const RESEND_SECONDS = 30;
 
@@ -27,15 +28,41 @@ function formatTimer(seconds) {
 }
 
 /**
- * OtpView — step 2 of 4: "Verify your email"
+ * OtpView — the shared "Verify your email" 6-digit code step.
  * email            — shown in the "we sent a code to ___" line
  * onVerified(code) — called once the 6-digit code passes validation
- * onBack()         — go back to the register form
+ * onBack()         — leave the OTP step
  * onResend()       — called when the resend link is used, after the timer runs out
+ *
+ * Optional overrides — defaults keep the register wizard behaviour:
+ * stepLabel        — eyebrow text; pass null to hide it (the reset flow is not step 2 of 4)
+ * title            — heading text
+ * description      — sub-heading text (pass your own, already-interpolated string)
+ * isPending        — true while the verify request is in flight: disables the submit button
+ * error            — message to render under the OTP field (server or flow error)
  */
-export function OtpView({ email, onVerified, onBack, onResend }) {
+export function OtpView({
+  email,
+  onVerified,
+  onBack,
+  onResend,
+  stepLabel,
+  title,
+  description,
+  isPending = false,
+  error = null,
+}) {
   const { t } = useTranslation("common");
   const [secondsLeft, setSecondsLeft] = React.useState(RESEND_SECONDS);
+
+  const eyebrow =
+    stepLabel === undefined ? t("auth.register.step", { current: 2 }) : stepLabel;
+  const heading = title ?? t("auth.register.verifyTitle");
+  const subHeading =
+    description ??
+    t("auth.register.verifyDescription", {
+      email: email || t("auth.register.yourEmail"),
+    });
 
   const form = useForm({
     resolver: zodResolver(otpSchema),
@@ -59,17 +86,15 @@ export function OtpView({ email, onVerified, onBack, onResend }) {
 
   return (
     <div>
-      <div className="mb-1 text-[11px] font-semibold text-secondary">
-        {t("auth.register.step", { current: 2 })}
-      </div>
+      {eyebrow ? (
+        <div className="mb-1 text-[11px] font-semibold text-secondary">
+          {eyebrow}
+        </div>
+      ) : null}
       <h1 className="mb-1 font-[DM_Sans] text-[23px] font-bold leading-7 tracking-tight text-ink">
-        {t("auth.register.verifyTitle")}
+        {heading}
       </h1>
-      <p className="mb-5 text-[13.5px] text-muted">
-        {t("auth.register.verifyDescription", {
-          email: email || t("auth.register.yourEmail"),
-        })}
-      </p>
+      <p className="mb-5 text-[13.5px] text-muted">{subHeading}</p>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit((data) => onVerified?.(data.code))}>
@@ -96,6 +121,12 @@ export function OtpView({ email, onVerified, onBack, onResend }) {
             )}
           />
 
+          {error ? (
+            <p role="alert" className="mt-2 text-[13px] font-medium text-red-500">
+              {error}
+            </p>
+          ) : null}
+
           <div className="mt-2.5 text-[13px] text-muted">
             {secondsLeft > 0 ? (
               <span>
@@ -106,7 +137,8 @@ export function OtpView({ email, onVerified, onBack, onResend }) {
               <button
                 type="button"
                 onClick={handleResend}
-                className="text-[13px] font-semibold text-primary hover:underline"
+                disabled={isPending}
+                className="text-[13px] font-semibold text-primary hover:underline disabled:text-muted"
               >
                 {t("auth.register.resend")}
               </button>
@@ -124,9 +156,10 @@ export function OtpView({ email, onVerified, onBack, onResend }) {
             </Button>
             <Button
               type="submit"
-              disabled={!isComplete}
+              disabled={!isComplete || isPending}
               className="h-[46px] flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-muted/40"
             >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("auth.register.verify")}
             </Button>
           </div>

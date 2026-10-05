@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export default function ApplicationErrorState({ onRetry }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       key="error"
@@ -14,7 +16,7 @@ export default function ApplicationErrorState({ onRetry }) {
         <AlertTriangle className="h-7 w-7 text-[#B3271E]" />
       </div>
       <h2 className="font-display font-bold text-[20px] mb-2">
-        Couldn't load this application
+        {t("pages.applicationDetail.loadFailed")}
       </h2>
       <p className="text-[13.5px] text-muted max-w-sm mx-auto mb-7">
         Something went wrong on our end. Your data is safe — please try again.

@@ -6,17 +6,18 @@ import {
   Map,
   MapPin,
   MessageSquareText,
-  Mic,
   PenLine,
   XCircle,
 } from "lucide-react";
 import MatchRing from "../ApplicationPage/MatchRing";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationDetailHero({
   isBannerState,
   setShowNoteForm,
   handleWithdraw,
 }) {
+  const { t } = useTranslation("common");
   return (
     <div className="bg-white border border-border rounded-3xl p-6 mb-5 shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -31,25 +32,25 @@ export default function ApplicationDetailHero({
           </h1>
           <div className="text-[13.5px] text-[#44474E]">Vercel · Remote</div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-muted mt-1.5">
-            <span>Applied Aug 24, 2026</span>
+            <span>{t("ui.applicationDetailHero.applied")} Aug 24, 2026</span>
             <span className="flex items-center gap-1">
               <CalendarClock className="h-3.5 w-3.5" />
-              Updated Aug 27, 2026
+              {t("ui.applicationDetailHero.updated")} Aug 27, 2026
             </span>
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5" />
-              Source: SkillMatch Feed
+              {t("ui.applicationDetailHero.source")}: SkillMatch Feed
             </span>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold bg-primary/10 text-primary">
             <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            Under Review
+            {t("ui.applicationDetailHero.underReview")}
           </span>
           <div className="flex items-center gap-2">
             <MatchRing score={98} />
-            <span className="text-[11px] text-muted">match</span>
+            <span className="text-[11px] text-muted">{t("ui.applicationDetailHero.match")}</span>
           </div>
         </div>
       </div>
@@ -60,28 +61,28 @@ export default function ApplicationDetailHero({
           className="h-9 px-4 rounded-full border border-border text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-background transition-colors"
         >
           <ExternalLink className="h-4 w-4" />
-          View Job
+          {t("ui.applicationDetailHero.viewJob")}
         </a>
         <a
           href="#view-cv"
           className="h-9 px-4 rounded-full border border-border text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-background transition-colors"
         >
           <FileText className="h-4 w-4" />
-          View CV
+          {t("ui.applicationDetailHero.viewCv")}
         </a>
         <a
           href="#open-source"
           className="h-9 px-4 rounded-full border border-border text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-background transition-colors"
         >
           <Link2 className="h-4 w-4" />
-          Open Source
+          {t("ui.applicationDetailHero.openSource")}
         </a>
         <a
           href="#ask-mentor"
           className="h-9 px-4 rounded-full bg-primary text-white text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-[#0F2036] transition-colors"
         >
           <MessageSquareText className="h-4 w-4" />
-          Ask Mentor
+          {t("ui.applicationDetailHero.askMentor")}
         </a>
         <button
           type="button"
@@ -89,7 +90,7 @@ export default function ApplicationDetailHero({
           className="h-9 px-4 rounded-full border border-border text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-background transition-colors"
         >
           <PenLine className="h-4 w-4" />
-          Add Note
+          {t("ui.applicationDetailHero.addNote")}
         </button>
 
         {/* {!isBannerState && (
@@ -110,7 +111,7 @@ export default function ApplicationDetailHero({
           className="h-9 px-4 rounded-full border border-border text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-background transition-colors"
         >
           <Map className="h-4 w-4" />
-          Add to Roadmap
+          {t("ui.applicationDetailHero.addToRoadmap")}
         </a>
 
         {!isBannerState && (
@@ -120,7 +121,7 @@ export default function ApplicationDetailHero({
             className="h-9 px-4 rounded-full border border-[#B3271E]/30 text-[#B3271E] text-[12.5px] font-semibold flex items-center gap-1.5 hover:bg-[#B3271E]/5 transition-colors sm:ms-auto"
           >
             <XCircle className="h-4 w-4" />
-            Withdraw
+            {t("ui.applicationDetailHero.withdraw")}
           </button>
         )}
       </div>

@@ -7,11 +7,17 @@
     "cvManagement": "CV Management",
     "aiChat": "AI Chat",
     "roadmap": "Roadmap",
-    "applicationTracker": "Application Tracker"
+    "applicationTracker": "Application Tracker",
+    "jobManagement": "Job Management",
+    "companymanagement": "Company Management",
+    "usermanagement": "User Management",
+    "auditLogs": "Audit Logs",
+    "cms": "Home Page CMS"
   },
   "actions": {
     "collapseSidebar": "Collapse Sidebar",
-    "expandSidebar": "Expand Sidebar"
+    "expandSidebar": "Expand Sidebar",
+    "back": "Back"
   },
   "mentor": {
     "title": "Need Help?",
@@ -87,6 +93,219 @@
       "openRoadmap": "Open Roadmap",
       "description": "Ranked by impact on your target role.",
       "empty": "No skill gaps identified yet."
+    }
+  },
+  "pages": {
+    "admin": {
+      "overview": {
+        "title": "Admin Dashboard",
+        "subtitle": "Platform overview & operational snapshot"
+      },
+      "jobManagement": {
+        "title": "Job Management",
+        "subtitle": "Monitor and manage every job listed on SkillMatch — internal postings and external sources alike."
+      },
+      "companies": {
+        "title": "Company Management",
+        "subtitle": "View, verify, and manage companies registered on the platform"
+      },
+      "userManagement": "User Management",
+      "auditLogs": "Audit Logs",
+      "companies": "Companies",
+      "companyManagement": "Company Management",
+      "auditLogDetails": "Audit Log Details",
+      "cms": "Home page content",
+      "userNotFound": "User not found",
+      "userLoadFailed": "Couldn't load this user",
+      "jobNotFound": "Job not found",
+      "userDetails": {
+        "personalInformation": "Personal Information",
+        "accountInformation": "Account Information",
+        "careerProfile": "Career Profile Summary",
+        "cvStatus": "CV Status",
+        "applications": "Applications Summary",
+        "savedJobs": "Saved Jobs Summary",
+        "roleStatus": "Role & Status",
+        "dates": "Dates",
+        "quickLinks": "Quick Links"
+      },
+      "auditDetails": {
+        "actor": "Admin / Actor",
+        "entity": "Entity",
+        "changes": "What Changed",
+        "relatedEntities": "Related Entities"
+      },
+      "jobManagementStates": {
+        "empty": "No jobs on the platform yet",
+        "loadFailed": "Couldn't load jobs"
+      },
+      "userManagementStates": {
+        "loadFailed": "Couldn't load users",
+        "empty": "No users yet",
+        "noResults": "No results found",
+        "addUser": "Add New User",
+        "editUser": "Edit User",
+        "changeRole": "Change Role",
+        "activateUser": "Activate user?",
+        "deactivateUser": "Deactivate user?",
+        "deleteUser": "Delete this user?"
+      },
+      "companyDetails": {
+        "companyInformation": "Company Information",
+        "contactInformation": "Contact Information",
+        "coreProfileDetails": "Core profile details",
+        "jobs": "Jobs",
+        "activity": "Activity",
+        "dates": "Dates",
+        "quickLinks": "Quick Links",
+        "verificationStatus": "Verification Status",
+        "markAsVerified": "Verified company",
+        "verifiedHint": "This company is verified and shown with a verified badge.",
+        "pendingHint": "This company is still awaiting review.",
+        "editCompany": "Edit Company",
+        "backToCompanies": "Back to Companies",
+        "saveChanges": "Save Changes",
+        "viewAllJobs": "View all jobs →",
+        "viewAll": "View all →",
+        "reject": "Reject",
+        "reEvaluate": "Re-evaluate",
+        "status": {
+          "pending": "Pending",
+          "verified": "Verified",
+          "rejected": "Rejected"
+        },
+        "banner": {
+          "pending": "Pending Verification",
+          "verified": "Company Verified",
+          "rejected": "Verification Rejected"
+        },
+        "bannerDescriptions": {
+          "pending": "Submitted for review · Sep 22, 2026 · 41 min ago",
+          "verified": "Verified on Sep 22, 2026",
+          "rejected": "Application does not meet guidelines"
+        },
+        "dateLabels": {
+          "created": "Created",
+          "lastUpdated": "Last Updated",
+          "submitted": "Submitted"
+        },
+        "stats": {
+          "openJobs": "Open Jobs",
+          "totalApplications": "Total Applications",
+          "created": "Created",
+          "lastUpdated": "Last Updated"
+        },
+        "fields": {
+          "companyName": "Company Name",
+          "legalName": "Legal Name",
+          "industry": "Industry",
+          "companySize": "Company Size",
+          "website": "Website",
+          "headquarters": "Headquarters",
+          "about": "About",
+          "primaryEmail": "Primary Email",
+          "phone": "Phone",
+          "hrEmail": "HR / Recruiting Email",
+          "linkedin": "LinkedIn"
+        },
+        "links": {
+          "jobs": "View Company Jobs",
+          "activity": "View Activity",
+          "auditLogs": "Audit Logs"
+        }
+      },
+      "jobDetails": {
+        "loadFailed": "Couldn't load this job",
+        "description": "Description",
+        "responsibilities": "Responsibilities",
+        "requiredSkills": "Required skills",
+        "preferredSkills": "Preferred skills",
+        "sourceAndMethod": "Source & application method",
+        "status": "Job status"
+      }
+    },
+    "applicationTracker": {
+      "title": "Application Tracker",
+      "description": "Every application you've sent, in one place — with its current stage and next step."
+    },
+    "recommendedOpportunities": "Recommended Opportunities",
+    "cvManagement": {
+      "title": "CV Management & AI Extraction Review",
+      "description": "Upload your resume, review, and verify the AI-extracted data."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "unread": "{{count}} unread",
+      "caughtUp": "You're all caught up"
+    },
+    "savedJobs": {
+      "title": "Saved Opportunities",
+      "description": "Manage and review the positions you've saved.",
+      "empty": "No Saved Roles Found"
+    },
+    "applicationStates": {
+      "empty": "No applications yet",
+      "loadFailed": "Couldn't load your applications"
+    },
+    "jobDetails": {
+      "notFound": "Job Post Not Found",
+      "loadFailed": "Unable to Load Job Details",
+      "scope": "Architectural Scope & Mission",
+      "responsibilities": "Core Responsibilities & Deliverables",
+      "requirements": "Technical Requirements Matrix",
+      "mandatoryStack": "Mandatory Core Stack",
+      "preferredSkills": "Complementary & Preferred Skills"
+    },
+    "applicationJobDetails": {
+      "interview": "Interview details",
+      "assessment": "Assessment details"
+    },
+    "applicationSubmission": {
+      "checkingStatus": "Checking Application Status",
+      "submitting": "Submitting Your Application",
+      "submitted": "Application Submitted!",
+      "alreadyApplied": "Already Applied",
+      "failed": "Submission Failed"
+    },
+    "onboarding": {
+      "complete": "You're All Set!",
+      "preferences": "Your Selected Preferences"
+    },
+    "applicationDetail": {
+      "submittedInformation": "Submitted information",
+      "submittedCv": "Submitted CV",
+      "timeline": "Application timeline",
+      "notes": "Your notes",
+      "insight": "AI Application Insight",
+      "loadFailed": "Couldn't load this application",
+      "notFound": "Application not found"
+    },
+    "profile": {
+      "workExperience": "Work Experience",
+      "projects": "Projects",
+      "education": "Education & Qualifications",
+      "personalInformation": "Personal Information",
+      "careerPreferences": "Career Preferences (Target Role)",
+      "skills": "Skills & AI Evaluation",
+      "editPersonalInformation": "Add / Edit Personal Information",
+      "editCareerPreferences": "Edit Career Preferences",
+      "addSkill": "Add Skill"
+    },
+    "aiChat": {
+      "emptyTitle": "Ask your Mentor anything"
+    },
+    "roadmap": {
+      "profileNeeded": "We need a bit more profile info first",
+      "buildPath": "Build your path to your next role",
+      "generating": "Building your roadmap",
+      "generationFailed": "Couldn't generate your roadmap",
+      "priorityGaps": "Priority skill gaps",
+      "phases": "Roadmap phases",
+      "weeklyTasks": "This week's tasks",
+      "completedTasks": "Completed tasks",
+      "milestones": "Milestones",
+      "phaseSkills": "Skills covered in this phase",
+      "phaseWeeklyTasks": "This phase's weekly actions"
     }
   }
 }

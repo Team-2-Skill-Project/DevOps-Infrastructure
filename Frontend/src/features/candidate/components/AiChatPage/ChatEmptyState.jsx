@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { Bot } from "lucide-react";
 
 /**
@@ -6,6 +7,7 @@ import { Bot } from "lucide-react";
  * Encourages the user to ask their first question.
  */
 export default function ChatEmptyState() {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -29,7 +31,7 @@ export default function ChatEmptyState() {
       </motion.div>
 
       <h2 className="mb-1.5 font-dm-sans text-base font-bold text-ink">
-        Ask your Mentor anything
+        {t("pages.aiChat.emptyTitle")}
       </h2>
 
       <p className="max-w-xs text-[13px] leading-relaxed text-muted">

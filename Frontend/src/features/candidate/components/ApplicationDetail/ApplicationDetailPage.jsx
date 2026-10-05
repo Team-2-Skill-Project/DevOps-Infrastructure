@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import ApplicationLoadingState from "./ApplicationLoadingState";
 import ApplicationNotFoundState from "./ApplicationNotFoundState";
@@ -11,6 +12,7 @@ import ApplicationDetailTimeline from "./ApplicationDetailTimeline";
 import ApplicationDetailNotes from "./ApplicationDetailNotes";
 
 export default function ApplicationDetailPage() {
+  const { t } = useTranslation("dashboard");
   const [viewState, setViewState] = useState("loaded");
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [noteText, setNoteText] = useState("");
@@ -88,7 +90,7 @@ export default function ApplicationDetailPage() {
                 <>
                   <div className="bg-white border border-border rounded-2xl p-6 mb-5 shadow-sm">
                     <h2 className="font-display font-bold text-[15px] mb-4">
-                      Interview details
+                      {t("pages.applicationJobDetails.interview")}
                     </h2>
                     <div className="grid sm:grid-cols-2 gap-3 text-[13px] mb-4">
                       <div className="flex justify-between border-b border-border pb-2">
@@ -124,7 +126,7 @@ export default function ApplicationDetailPage() {
 
                   <div className="bg-white border border-border rounded-2xl p-6 mb-5 shadow-sm">
                     <h2 className="font-display font-bold text-[15px] mb-4">
-                      Assessment details
+                      {t("pages.applicationJobDetails.assessment")}
                     </h2>
                     <div className="grid sm:grid-cols-2 gap-3 text-[13px]">
                       <div className="flex justify-between border-b border-border pb-2">

@@ -28,28 +28,29 @@ export default function JobCard({ job, index = 0, onApply }) {
       <Card className="cursor-pointer group flex h-full flex-col justify-between rounded-2xl border-border bg-surface p-5 shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all hover:border-primary/40 hover:shadow-md">
         <Link to={localizedPath(`/dashboard/jobs/${job.id}`)}>
           <CardContent className="flex flex-col gap-3 p-0">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
                 <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-xl font-headline-lg text-[18px] font-bold ${job.logoClass}`}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-headline-lg text-[18px] font-bold ${job.logoClass}`}
                 >
                   {job.initial}
                 </div>
-                <div className="flex flex-col">
-                  <span className="flex items-center gap-1 font-headline-sm text-[14px] font-semibold text-ink">
+                <div className="flex flex-col min-w-0">
+                  <span className="flex items-center gap-1 font-headline-sm text-[14px] font-semibold text-ink truncate">
                     {job.company}
                     {job.verified && (
-                      <BadgeCheck className="h-4 w-4 fill-success text-surface" />
+                      <BadgeCheck className="h-4 w-4 shrink-0 fill-success text-surface" />
                     )}
                   </span>
-                  <span className="flex items-center gap-1 font-body-sm text-[12px] text-muted">
-                    <LocationIcon className="h-3.5 w-3.5" />
+                  <span className="flex items-center gap-1 font-body-sm text-[12px] text-muted truncate">
+                    <LocationIcon className="h-3.5 w-3.5 shrink-0" />
                     {job.location}
                   </span>
                 </div>
               </div>
-              {/* Ai Match */}
-              <Badge className="gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[12px] font-semibold text-success hover:bg-success/10">
+
+              {/* Ai Match Badge */}
+              <Badge className="shrink-0 gap-1 rounded-full bg-success/10 px-2 py-0.5 text-[12px] font-semibold text-success hover:bg-success/10">
                 <Zap className="h-3.5 w-3.5" />
                 {job.matchPercent}% Match
               </Badge>

@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { CircleAlert, CircleCheck, StickyNotes } from "lucide-react";
 import Modal from "@/components/shared/Modal";
 import Status from "@/components/shared/Status";
@@ -24,6 +25,7 @@ export default function JobModalViews({
   onRetry,
   onSubmit,
 }) {
+  const { t } = useTranslation("dashboard");
   if (view === "form") {
     return (
       <JobApplicationModal
@@ -40,7 +42,7 @@ export default function JobModalViews({
       <Modal onClose={() => {}}>
         <Status
           icon={<Spinner />}
-          title="Checking Application Status"
+          title={t("pages.applicationSubmission.checkingStatus")}
           subtitle="We are verifying if you have previously applied for this position and available submission routes."
           secondaryButton={{ label: "Cancel", disabled: true }}
           primaryButton={{ label: "Please wait", disabled: true }}
@@ -54,7 +56,7 @@ export default function JobModalViews({
       <Modal onClose={() => {}}>
         <Status
           icon={<Spinner />}
-          title="Submitting Your Application"
+          title={t("pages.applicationSubmission.submitting")}
           subtitle="Please do not close this window — this will only take a moment."
           secondaryButton={{ label: "Cancel", disabled: true }}
           primaryButton={{ label: "Submitting", disabled: true }}
@@ -69,7 +71,7 @@ export default function JobModalViews({
         <Status
           icon={<CircleCheck className="h-7 w-7 text-success" />}
           iconClassName="border border-success/30 bg-success/10"
-          title="Application Submitted!"
+          title={t("pages.applicationSubmission.submitted")}
           subtitle={
             <>
               Your application for{" "}
@@ -93,7 +95,7 @@ export default function JobModalViews({
         <Status
           icon={<StickyNotes className="text-[28px] text-warning" />}
           iconClassName="border border-warning/30 bg-warning/10"
-          title="Already Applied"
+          title={t("pages.applicationSubmission.alreadyApplied")}
           subtitle={
             <>
               You submitted an application for{" "}
@@ -123,7 +125,7 @@ export default function JobModalViews({
         <Status
           icon={<CircleAlert className="h-7 w-7 text-error" />}
           iconClassName="border border-error/30 bg-error/10"
-          title="Submission Failed"
+          title={t("pages.applicationSubmission.failed")}
           subtitle="A server connection error occurred. Your entered information was not lost — you can try submitting again."
           secondaryButton={{ label: "Cancel", onClick: onClose }}
           primaryButton={{ label: "Retry Submission", onClick: onRetry }}

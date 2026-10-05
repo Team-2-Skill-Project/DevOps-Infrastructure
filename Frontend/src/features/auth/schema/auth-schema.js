@@ -1,39 +1,44 @@
 import { z } from "zod";
+import { validationMessage } from "@/components/shared/i18n/validationMessage";
 
 export const registerSchema = z
   .object({
-    fullName: z
+    name: z
       .string()
-      .min(1, "Full name is required")
-      .min(3, "Full name must be at least 3 characters"),
+      .min(1, { error: validationMessage("required") })
+      .min(3, { error: validationMessage("fullNameMin", { count: 3 }) }),
     email: z
       .string()
-      .min(1, "Email is required")
-      .email("Enter a valid email address"),
+      .min(1, { error: validationMessage("required") })
+      .email({ error: validationMessage("emailInvalid") }),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters")
+      .min(8, { error: validationMessage("passwordMin", { count: 8 }) })
       .regex(/[A-Z]/, {
-        message: "Password must contain at least one uppercase letter",
+        error: validationMessage("passwordUppercase"),
       })
       .regex(/[a-z]/, {
-        message: "Password must contain at least one lowercase letter",
+        error: validationMessage("passwordLowercase"),
       })
-      .regex(/[0-9]/, { message: "Password must contain at least one number" })
+      .regex(/[0-9]/, { error: validationMessage("passwordNumber") })
       .regex(/[^A-Za-z0-9]/, {
-        message: "Password must contain at least one special character",
+        error: validationMessage("passwordSpecial"),
       }),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-    terms: z.literal(true, "You must accept the Terms and Privacy Policy"),
+    password_confirmation: z
+      .string()
+      .min(1, { error: validationMessage("confirmPasswordRequired") }),
+    terms: z.literal(true, {
+      error: validationMessage("acceptTerms"),
+    }),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match — please check and try again.",
-    path: ["confirmPassword"],
+  .refine((data) => data.password === data.password_confirmation, {
+    error: validationMessage("passwordMismatch"),
+    path: ["password_confirmation"],
   });
 
 export const otpSchema = z.object({
   code: z
     .string()
-    .length(6, "Enter all 6 digits")
-    .regex(/^\d{6}$/, "Code must be numbers only"),
+    .length(6, { error: validationMessage("otpLength", { count: 6 }) })
+    .regex(/^\d{6}$/, { error: validationMessage("otpNumbersOnly") }),
 });

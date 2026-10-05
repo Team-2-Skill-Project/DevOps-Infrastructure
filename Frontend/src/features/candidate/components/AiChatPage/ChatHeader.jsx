@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { Bot } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Header bar for the AI Chat panel.
  * Shows the bot avatar, name, and a short description.
  */
 export default function ChatHeader() {
+  const { t } = useTranslation("common");
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -21,10 +23,10 @@ export default function ChatHeader() {
       {/* Info */}
       <div className="min-w-0">
         <div className="text-[13px] font-semibold text-ink">
-          AI Career Mentor
+          {t("ui.chat.mentor")}
         </div>
         <div className="text-[11px] text-muted">
-          Answers using your profile, CV, jobs, and roadmap
+          {t("ui.chat.description")}
         </div>
       </div>
 
@@ -34,7 +36,7 @@ export default function ChatHeader() {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
           <span className="relative inline-flex size-2 rounded-full bg-success" />
         </span>
-        <span className="text-[11px] font-medium text-success">Online</span>
+        <span className="text-[11px] font-medium text-success">{t("ui.chat.online")}</span>
       </div>
     </motion.div>
   );

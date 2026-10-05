@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import CategoryCard from "./CategoryCard";
 import AIMentorCard from "../AIMentorCard";
-import { CATEGORIES } from "@/constants/categories";
+import { CATEGORIES } from "@/features/public/shared/categories";
 import { useTranslation } from "react-i18next";
 
 

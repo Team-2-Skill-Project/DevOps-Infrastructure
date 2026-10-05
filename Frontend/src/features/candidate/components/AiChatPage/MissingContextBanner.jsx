@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 /**
  * Warning banner shown when the user has no target role set.
@@ -7,6 +8,7 @@ import { Info } from "lucide-react";
  * @param {{ visible?: boolean }} props
  */
 export default function MissingContextBanner({ visible = false }) {
+  const { t } = useTranslation("common");
   return (
     <AnimatePresence>
       {visible && (
@@ -21,14 +23,13 @@ export default function MissingContextBanner({ visible = false }) {
             <Info className="mt-0.5 size-4 flex-shrink-0 text-warning" />
             <div>
               <span className="font-semibold text-ink">
-                No target role set yet.
+                {t("ui.chat.noTarget")}
               </span>{" "}
-              I can still help with general profile questions, but for
-              role-specific advice,{" "}
+              {t("ui.chat.generalHelp")}{" "}
               <a href="#" className="font-semibold text-primary">
-                set a target role
+                {t("ui.chat.setTarget")}
               </a>{" "}
-              or open a saved job first.
+              {t("ui.chat.orOpenSaved")}
             </div>
           </div>
         </motion.div>

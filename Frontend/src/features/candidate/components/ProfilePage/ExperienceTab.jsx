@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
-import ItemCard from "./shared/ItemCard";
+import ItemCard from "./ItemCard";
 import TabSaveActions from "./TabSaveActions";
 
 const DEFAULT_EXPERIENCES = [
@@ -15,6 +16,7 @@ const DEFAULT_EXPERIENCES = [
 ];
 
 export default function ExperienceTab({ initialExperiences = DEFAULT_EXPERIENCES }) {
+  const { t } = useTranslation("dashboard");
   const [experiences, setExperiences] = useState(initialExperiences);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -105,7 +107,7 @@ export default function ExperienceTab({ initialExperiences = DEFAULT_EXPERIENCES
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-slate-900 tracking-tight">Work Experience</h3>
+        <h3 className="text-lg font-bold text-slate-900 tracking-tight">{t("pages.profile.workExperience")}</h3>
         <button
           onClick={handleOpenAdd}
           className="inline-flex items-center gap-2 bg-[#1E325C] hover:bg-[#162545] text-white px-4 py-2 rounded-xl text-xs font-semibold transition-all shadow-sm active:scale-95 cursor-pointer"

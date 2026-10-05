@@ -3,6 +3,7 @@ import { Check, Edit3, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { useTranslation } from "react-i18next";
 
 export function JobCardSkeleton() {
   return (
@@ -48,6 +49,7 @@ export default function JobCard({
   onNoteChange,
   onAction,
 }) {
+  const { t } = useTranslation("common");
   const isDimmed = aiState === "low" && job.fitScore < 75;
 
   return (
@@ -113,7 +115,7 @@ export default function JobCard({
         ))}
         {job.extraSkillsCount > 0 && (
           <span className="text-muted text-xs px-2 py-1 rounded-md">
-            +{job.extraSkillsCount} bonus skills
+            +{job.extraSkillsCount} {t("ui.savedJobCard.bonusSkills")}
           </span>
         )}
       </div>
@@ -127,12 +129,12 @@ export default function JobCard({
             className="overflow-hidden border border-border rounded-xl bg-background p-4 text-xs space-y-3 mb-4"
           >
             <div>
-              <strong className="text-primary block mb-1">Description</strong>
+              <strong className="text-primary block mb-1">{t("ui.savedJobCard.description")}</strong>
               <p className="text-muted wrap-break-word">{job.description}</p>
             </div>
             <div>
               <strong className="text-primary block mb-1">
-                Key Responsibilities
+                {t("ui.savedJobCard.responsibilities")}
               </strong>
               <ul className="text-muted list-disc ps-4">
                 {job.responsibilities.map((item) => (
@@ -141,9 +143,9 @@ export default function JobCard({
               </ul>
             </div>
             <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-              <span className="text-muted">Source: {job.source}</span>
-              <span className="text-muted">Method: {job.method}</span>
-              <span className="text-muted">Experience: {job.experience}</span>
+              <span className="text-muted">{t("ui.savedJobCard.source")}: {job.source}</span>
+              <span className="text-muted">{t("ui.savedJobCard.method")}: {job.method}</span>
+              <span className="text-muted">{t("ui.savedJobCard.experience")}: {job.experience}</span>
             </div>
           </motion.div>
         )}
@@ -185,24 +187,24 @@ export default function JobCard({
             value={noteValue}
             onChange={(event) => onNoteChange(event.target.value)}
             className="min-h-20 w-full resize-none text-xs leading-relaxed whitespace-normal"
-            placeholder="Write a private note or salary target..."
+            placeholder={t("ui.savedJobCard.notePlaceholder")}
           />
           <div className="flex flex-wrap justify-end gap-2 mt-2">
-            <Button onClick={onCancelNote}>Cancel</Button>
-            <Button onClick={() => onSaveNote(job.id)}>Save Note</Button>
+            <Button onClick={onCancelNote}>{t("ui.savedJobCard.cancel")}</Button>
+            <Button onClick={() => onSaveNote(job.id)}>{t("ui.savedJobCard.saveNote")}</Button>
           </div>
         </div>
       ) : job.note ? (
         <div className="bg-background border border-border rounded-xl p-3 mb-4 text-xs flex items-center justify-between gap-2">
           <span className="min-w-0 flex-1 truncate">
             <Edit3 className="w-3.5 h-3.5 inline me-2" />
-            <strong>Candidate Note:</strong> {job.note}
+            <strong>{t("ui.savedJobCard.candidateNote")}:</strong> {job.note}
           </span>
           <Button
             onClick={() => onStartEdit(job)}
             className="text-[11px] text-secondary shrink-0"
           >
-            Edit
+            {t("ui.savedJobCard.edit")}
           </Button>
         </div>
       ) : (
@@ -211,10 +213,10 @@ export default function JobCard({
           className="h-auto min-h-14 w-full items-start justify-between gap-3 whitespace-normal border border-dashed border-border rounded-xl p-3 mb-4 text-left text-xs text-muted"
         >
           <span className="min-w-0 flex-1 italic wrap-break-word">
-            + Add a private note or salary target for this position...
+            {t("ui.savedJobCard.addPlaceholder")}
           </span>
           <span className="shrink-0 self-end text-secondary sm:self-center">
-            Add Note
+            {t("ui.savedJobCard.addNote")}
           </span>
         </Button>
       )}
@@ -230,7 +232,7 @@ export default function JobCard({
             onClick={onExpand}
             className="flex-1 sm:flex-none border border-border bg-background text-primary"
           >
-            {expanded ? "Hide Details" : "View Details"}
+            {expanded ? t("ui.savedJobCard.hideDetails") : t("ui.savedJobCard.viewDetails")}
           </Button>
           {job.status === "applied" ? (
             <Button
@@ -238,7 +240,7 @@ export default function JobCard({
               className="flex-1 sm:flex-none bg-success text-success-foreground"
             >
               <Check className="w-3.5 h-3.5" />
-              Applied
+              {t("ui.savedJobCard.applied")}
             </Button>
           ) : (
             <Button
@@ -246,7 +248,7 @@ export default function JobCard({
               className="flex-1 sm:flex-none bg-secondary text-secondary-foreground"
             >
               <Zap className="w-3.5 h-3.5" />
-              Apply Fast Track
+              {t("ui.savedJobCard.applyFast")}
             </Button>
           )}
         </div>

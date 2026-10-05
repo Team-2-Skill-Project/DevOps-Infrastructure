@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
-import ItemCard from "./shared/ItemCard";
+import ItemCard from "./ItemCard";
 import TabSaveActions from "./TabSaveActions";
 
 const DEFAULT_SKILLS = [
@@ -19,6 +20,7 @@ const DEFAULT_SKILLS = [
 ];
 
 export default function SkillsTab({ initialSkills = DEFAULT_SKILLS }) {
+  const { t } = useTranslation("dashboard");
   const [skills, setSkills] = useState(initialSkills);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -79,7 +81,7 @@ export default function SkillsTab({ initialSkills = DEFAULT_SKILLS }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-900 tracking-tight">
-          Skills & AI Evaluation
+          {t("pages.profile.skills")}
         </h3>
         <button
           onClick={() => setIsAddOpen(true)}
@@ -122,7 +124,7 @@ export default function SkillsTab({ initialSkills = DEFAULT_SKILLS }) {
       <TabSaveActions
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
-        title="Add Skill"
+        title={t("pages.profile.addSkill")}
         confirmLabel="Save"
         isLoading={isAdding}
         loadingLabel="Saving..."

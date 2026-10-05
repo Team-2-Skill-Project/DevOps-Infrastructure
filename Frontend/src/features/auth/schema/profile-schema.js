@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { validationMessage } from "@/components/shared/i18n/validationMessage";
 
 export const profileSchema = z.object({
-  jobTitle: z.string().min(1, "Job title is required"),
-  location: z.string().min(1, "Location is required"),
-  experience: z.string().min(1, "Please select your experience"),
+  jobTitle: z.string().min(1, { error: validationMessage("jobTitleRequired") }),
+  location: z.string().min(1, { error: validationMessage("locationRequired") }),
+  experience: z.string().min(1, { error: validationMessage("experienceRequired") }),
   bio: z.string().optional(),
 });

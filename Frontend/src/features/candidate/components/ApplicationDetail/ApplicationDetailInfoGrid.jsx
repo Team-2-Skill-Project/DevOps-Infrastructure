@@ -1,11 +1,13 @@
 import { FileText } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationDetailInfoGrid() {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="grid sm:grid-cols-2 gap-5 mb-5">
       <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
         <h2 className="font-display font-bold text-[15px] mb-4">
-          Submitted information
+          {t("pages.applicationDetail.submittedInformation")}
         </h2>
         <div className="space-y-2.5 text-[13px]">
           <div className="flex justify-between">
@@ -29,7 +31,7 @@ export default function ApplicationDetailInfoGrid() {
 
       <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
         <h2 className="font-display font-bold text-[15px] mb-4">
-          Submitted CV
+          {t("pages.applicationDetail.submittedCv")}
         </h2>
         <div className="flex items-center gap-3 border border-border rounded-xl p-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">

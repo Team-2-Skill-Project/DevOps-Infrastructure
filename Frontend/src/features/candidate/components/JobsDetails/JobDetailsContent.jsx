@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -122,6 +123,7 @@ export default function JobDetailsContent({
 }
 
 function OverviewSection() {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -131,7 +133,7 @@ function OverviewSection() {
       className="bg-surface border border-border rounded-2xl p-7 shadow-xs"
     >
       <SectionHeading
-        title="Architectural Scope & Mission"
+        title={t("pages.jobDetails.scope")}
         meta="Role Dossier #TN-882"
       />
       <p className="text-sm text-ink leading-relaxed mb-4">
@@ -170,6 +172,7 @@ function OverviewSection() {
 }
 
 function ResponsibilitiesSection() {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -179,7 +182,7 @@ function ResponsibilitiesSection() {
       className="bg-surface border border-border rounded-2xl p-7 shadow-xs"
     >
       <h2 className="font-dm-sans text-2xl font-bold text-primary mb-5">
-        Core Responsibilities & Deliverables
+        {t("pages.jobDetails.responsibilities")}
       </h2>
       <div className="space-y-4 text-sm text-ink">
         {responsibilities.map(([title, description], index) => (
@@ -204,6 +207,7 @@ function ResponsibilitiesSection() {
 }
 
 function RequirementsSection() {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.section
       initial={{ opacity: 0, y: 16 }}
@@ -214,15 +218,15 @@ function RequirementsSection() {
     >
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-dm-sans text-2xl font-bold text-primary">
-          Technical Requirements Matrix
+          {t("pages.jobDetails.requirements")}
         </h2>
         <span className="text-xs font-semibold text-primary bg-background border border-border px-2.5 py-1 rounded-lg">
           6 of 6 Verified
         </span>
       </div>
-      <SkillGroup title="Mandatory Core Stack" skills={coreSkills} primary />
+      <SkillGroup title={t("pages.jobDetails.mandatoryStack")} skills={coreSkills} primary />
       <SkillGroup
-        title="Complementary & Preferred Skills"
+        title={t("pages.jobDetails.preferredSkills")}
         skills={["Tailwind CSS", ...preferredSkills]}
       />
     </motion.section>

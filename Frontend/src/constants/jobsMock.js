@@ -1,3 +1,11 @@
+/**
+ * Shared job catalog.
+ *
+ * Deliberately the only module left in src/constants/: `JOBS` is consumed by
+ * both the public landing page and the candidate job board, so it cannot live
+ * in a single feature's `shared/` folder without creating a cross-feature
+ * import. Feature-specific datasets live in `src/features/<feature>/shared/`.
+ */
 export const JOB_CATEGORIES = [
   { value: "all", label: "All Roles" },
   { value: "frontend", label: "Frontend" },

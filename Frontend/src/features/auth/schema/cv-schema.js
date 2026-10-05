@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validationMessage } from "@/components/shared/i18n/validationMessage";
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -8,10 +9,10 @@ const ACCEPTED_TYPES = [
 const MAX_SIZE_MB = 10;
 
 export const cvFileSchema = z
-  .instanceof(File, { message: "Please choose a file" })
+  .instanceof(File, { error: validationMessage("fileRequired") })
   .refine((file) => ACCEPTED_TYPES.includes(file.type), {
-    message: "File must be a PDF or Word document (.doc/.docx)",
+    error: validationMessage("fileType"),
   })
   .refine((file) => file.size <= MAX_SIZE_MB * 1024 * 1024, {
-    message: `File must be under ${MAX_SIZE_MB}MB`,
+    error: validationMessage("fileMaxSize", { size: MAX_SIZE_MB }),
   });

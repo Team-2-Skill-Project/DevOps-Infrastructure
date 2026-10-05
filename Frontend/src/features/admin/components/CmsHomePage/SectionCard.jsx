@@ -1,0 +1,13 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, LayoutGrid } from "lucide-react";
+import { cn } from "@/lib/utils";
+import SectionBody from "./SectionBody";
+
+export default function SectionCard({ id, open, onToggle, data, rootState, viewLang, onPatchSection, onPatchRoot, langs, isI18n, tx, clone, sectionInfo, ease }) {
+  const info = sectionInfo[id];
+  const sectionKey = info?.sectionKey;
+  const visible = sectionKey ? rootState.sections?.[sectionKey]?.visible !== false : true;
+  const toggleVisible = (checked) => { if (!sectionKey) return; onPatchRoot({ sections: { ...rootState.sections, [sectionKey]: { ...rootState.sections[sectionKey], visible: checked } } }); };
+  const editorProps = { viewLang, langs, isI18n, tx, clone, sectionInfo, ease };
+  return <motion.div layout className={cn("overflow-hidden rounded-2xl border border-border bg-surface shadow-sm", !visible && "opacity-70")}><button type="button" onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-4 text-left"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><LayoutGrid className="h-4 w-4" /></span><span className="min-w-0 flex-1"><b className="block text-[15px] text-ink">{info?.label || id}</b><span className="block truncate text-xs text-muted">{info?.description}</span></span>{sectionKey && <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold" onClick={(event) => event.stopPropagation()}><input type="checkbox" className="sr-only peer" checked={visible} onChange={(event) => toggleVisible(event.target.checked)} /><span className="relative h-5 w-9 rounded-full bg-border transition peer-checked:bg-success after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-surface after:transition peer-checked:after:translate-x-4" /><span className="w-11 text-muted">{visible ? "Live" : "Hidden"}</span></label>}<ChevronDown className={cn("h-5 w-5 text-muted transition", open && "rotate-180")} /></button><AnimatePresence initial={false}>{open && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25, ease }} className="overflow-hidden border-t border-border"><div className="px-5 pb-5 pt-4"><SectionBody {...editorProps} sectionKey={id === "sections" ? "sections" : id} data={id === "sections" ? rootState : data} onPatch={id === "sections" ? onPatchRoot : onPatchSection} /></div></motion.div>}</AnimatePresence></motion.div>;
+}

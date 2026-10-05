@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { AnimatePresence } from "framer-motion";
 import JobCard from "@/components/shared/JobCard";
@@ -7,6 +8,7 @@ import JobFilters from "../components/JobsPage/JobFilters";
 import JobModalViews from "../components/JobsPage/JobModalViews";
 
 export default function JobsPage() {
+  const { t } = useTranslation("dashboard");
   const [view, setView] = useState("none");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeJob, setActiveJob] = useState(JOBS[0]);
@@ -44,7 +46,7 @@ export default function JobsPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-primary">
-              Recommended Opportunities
+              {t("pages.recommendedOpportunities")}
             </h2>
             <span className="text-xs text-muted">
               Showing {JOBS.length} of 140 jobs

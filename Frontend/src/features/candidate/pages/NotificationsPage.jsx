@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MOCK_NOTIFICATIONS } from "@/constants/notificationsMock";
+import { MOCK_NOTIFICATIONS } from "@/features/candidate/shared/notificationsMock";
 import NotificationsList from "../components/NotificationsPage/NotificationsList";
 
 export default function NotificationsPage() {
+  const { t } = useTranslation("dashboard");
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -23,10 +25,12 @@ export default function NotificationsPage() {
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h1 className="font-display text-[22px] font-bold text-ink">
-            Notifications
+            {t("pages.notifications.title")}
           </h1>
           <p className="mt-1 text-[12px] text-muted">
-            {unreadCount > 0 ? `${unreadCount} unread` : "You're all caught up"}
+            {unreadCount > 0
+              ? t("pages.notifications.unread", { count: unreadCount })
+              : t("pages.notifications.caughtUp")}
           </p>
         </div>
         <Button

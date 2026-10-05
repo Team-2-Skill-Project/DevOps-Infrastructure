@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function SavedJobsHeader({ jobsCount }) {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 lg:p-7 mb-8 shadow-[0_2px_12px_-4px_rgba(31,54,92,0.04)] flex flex-col lg:flex-row lg:items-center justify-between gap-5 lg:gap-6">
       <div className="order-1 max-w-2xl min-w-0">
@@ -10,12 +13,10 @@ export default function SavedJobsHeader({ jobsCount }) {
           </span>
         </div>
         <h1 className="font-dm-sans text-2xl sm:text-3xl md:text-4xl text-primary font-bold tracking-tight mb-2 wrap-break-word">
-          Saved Opportunities
+          {t("pages.savedJobs.title")}
         </h1>
         <p className="text-sm text-muted leading-relaxed wrap-break-word">
-          Manage, annotate, and accelerate positions tailored to your
-          engineering background. AI continuously tracks requirement changes and
-          deadline windows.
+          {t("pages.savedJobs.description")}
         </p>
       </div>
       <div className="order-2 grid w-full grid-cols-3 gap-1.5 sm:gap-3 bg-background border border-border p-2.5 sm:p-3 rounded-xl lg:w-auto lg:min-w-85">

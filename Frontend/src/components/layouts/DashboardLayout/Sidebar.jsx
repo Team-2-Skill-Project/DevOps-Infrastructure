@@ -5,8 +5,13 @@ import LogoNavy from "@/assets/logo/MatchIn_logo.svg";
 import LogoText from "@/assets/logo/logo_text.svg";
 import { cn } from "@/lib/utils";
 import { buildSidebarNav } from "@/utils/buildSidebarNav";
-import { dashboard } from "@/app/routes/dashboard.routes";
 import { useLocalizedPath } from "@/utils/routes";
+
+import {
+  candidateDashboardRoutes,
+  adminDashboardRoutes,
+} from "@/app/routes/dashboard.routes";
+
 
 
 function NavItem({ icon: Icon, label, labelKey, href, end, collapsed, onNavigate, t }) {
@@ -52,11 +57,13 @@ export default function Sidebar({
   onToggleCollapse,
   mobileOpen,
   onCloseMobile,
+  role,
 }) {
   const { t } = useTranslation("dashboard");
   const localizedPath = useLocalizedPath();
-  const navItems = buildSidebarNav(dashboard, localizedPath("/dashboard"));
-
+  const routes =
+  role === "admin" ? adminDashboardRoutes : candidateDashboardRoutes;
+  const navItems = buildSidebarNav(routes, localizedPath("/dashboard"));
   return (
     <>
       {mobileOpen && (
@@ -113,13 +120,25 @@ export default function Sidebar({
               <button
                 type="button"
                 onClick={onToggleCollapse}
-                aria-label={collapsed ? t("actions.expandSidebar") : t("actions.collapseSidebar")}
-                title={collapsed ? t("actions.expandSidebar") : t("actions.collapseSidebar")}
+                aria-label={
+                  collapsed
+                    ? t("actions.expandSidebar")
+                    : t("actions.collapseSidebar")
+                }
+                title={
+                  collapsed
+                    ? t("actions.expandSidebar")
+                    : t("actions.collapseSidebar")
+                }
                 className={cn(
                   "flex shrink-0 items-center justify-center rounded-lg p-1.5 text-muted transition-colors hover:text-primary",
                 )}
               >
-                {collapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+                {collapsed ? (
+                  <PanelLeftOpen className="h-5 w-5" />
+                ) : (
+                  <PanelLeftClose className="h-5 w-5" />
+                )}
               </button>
             </div>
 
@@ -147,7 +166,9 @@ export default function Sidebar({
             {!collapsed && (
               <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary to-primary/80 p-4 text-xs text-primary-foreground shadow-sm">
                 <Sparkles className="mb-2 h-6 w-6 text-accent" />
-                <p className="mb-1 text-[13px] font-bold">{t("mentor.title")}</p>
+                <p className="mb-1 text-[13px] font-bold">
+                  {t("mentor.title")}
+                </p>
                 <p className="mb-3 text-[11px] text-primary-foreground/70">
                   {t("mentor.description")}
                 </p>
@@ -160,7 +181,6 @@ export default function Sidebar({
                 </a>
               </div>
             )}
-
           </div>
         </div>
       </aside>

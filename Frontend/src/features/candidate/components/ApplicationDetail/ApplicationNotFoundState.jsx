@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { SearchX } from "lucide-react";
 
 export default function ApplicationNotFoundState({ onBack }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       key="notfound"
@@ -14,7 +16,7 @@ export default function ApplicationNotFoundState({ onBack }) {
         <SearchX className="h-7 w-7 text-muted" />
       </div>
       <h2 className="font-display font-bold text-[20px] mb-2">
-        Application not found
+        {t("pages.applicationDetail.notFound")}
       </h2>
       <p className="text-[13.5px] text-muted max-w-sm mx-auto mb-7">
         This application may have been removed, or the link you followed is no

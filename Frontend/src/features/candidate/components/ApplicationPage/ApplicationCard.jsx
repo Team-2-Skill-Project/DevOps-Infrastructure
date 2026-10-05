@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Briefcase, ExternalLink, MoreVertical, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MatchRing from "./MatchRing";
-import { STATUS_CONFIG } from "@/constants/application";
+import { STATUS_CONFIG } from "@/features/candidate/shared/application";
 
 export default function ApplicationCard({
   app,

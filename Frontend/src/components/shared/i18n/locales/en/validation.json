@@ -1,0 +1,23 @@
+{
+	"required": "This field is required.",
+	"fullNameMin": "Full name must be at least {{count}} characters.",
+	"minCharacters": "Must be at least {{count}} characters.",
+	"emailInvalid": "Enter a valid email address.",
+	"passwordMin": "Password must be at least {{count}} characters.",
+	"passwordUppercase": "Password must contain at least one uppercase letter.",
+	"passwordLowercase": "Password must contain at least one lowercase letter.",
+	"passwordNumber": "Password must contain at least one number.",
+	"passwordSpecial": "Password must contain at least one special character.",
+	"confirmPasswordRequired": "Please confirm your password.",
+	"passwordMismatch": "Passwords do not match. Please check and try again.",
+	"acceptTerms": "You must accept the Terms and Privacy Policy.",
+	"otpLength": "Enter all {{count}} digits.",
+	"otpNumbersOnly": "The code must contain numbers only.",
+	"fileRequired": "Please choose a file.",
+	"fileType": "File must be a PDF or Word document (.doc/.docx).",
+	"fileMaxSize": "File must be under {{size}}MB.",
+	"jobTitleRequired": "Job title is required.",
+	"locationRequired": "Location is required.",
+	"experienceRequired": "Please select your experience.",
+	"apiGeneric": "Please review this field and try again."
+}

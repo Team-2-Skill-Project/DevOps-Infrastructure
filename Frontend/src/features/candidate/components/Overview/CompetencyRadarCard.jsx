@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DEFAULT_COMPETENCY_RADAR } from "@/constants/competencyRadar";
+import { DEFAULT_COMPETENCY_RADAR } from "@/features/candidate/shared/competencyRadar";
 import { useTranslation } from "react-i18next";
 
 const RADIUS_OUTER = 50;

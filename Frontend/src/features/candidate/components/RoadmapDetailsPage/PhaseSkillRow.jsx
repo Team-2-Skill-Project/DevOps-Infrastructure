@@ -1,4 +1,4 @@
-import { PRIORITY_STYLES } from "@/constants/skillPriorityStyles";
+import { PRIORITY_STYLES } from "@/features/candidate/shared/skillPriorityStyles";
 import { motion } from "framer-motion";
 
 export default function PhaseSkillRow({ skill, index = 0 }) {

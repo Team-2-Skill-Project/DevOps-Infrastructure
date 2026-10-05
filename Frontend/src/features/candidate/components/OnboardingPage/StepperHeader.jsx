@@ -1,4 +1,4 @@
-import { ONBOARDING_STEP_FIELDS } from "@/constants/onboardingstepfields";
+import { ONBOARDING_STEP_FIELDS } from "@/features/candidate/shared/onboardingstepfields";
 
 export default function StepperHeader({ currentStep }) {
   const percent = Math.round(

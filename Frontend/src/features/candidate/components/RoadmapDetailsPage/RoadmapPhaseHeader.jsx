@@ -2,8 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DEFAULT_ROADMAP_PHASE } from "@/constants/roadmapPhaseMock";
+import { DEFAULT_ROADMAP_PHASE } from "@/features/candidate/shared/roadmapPhaseMock";
 import { useLocalizedPath } from "@/utils/routes";
+import { useTranslation } from "react-i18next";
 
 /**
  * data shape: { phaseNumber, totalPhases, title, goal, completion,
@@ -11,6 +12,7 @@ import { useLocalizedPath } from "@/utils/routes";
  * The ring and the bar both read `completion` — pass any 0-100 value.
  */
 export default function RoadmapPhaseHeader({ data = DEFAULT_ROADMAP_PHASE }) {
+  const { t } = useTranslation("common");
   const localizedPath = useLocalizedPath();
   const { phaseNumber, totalPhases, title, goal, completion, tasksCompleted, totalTasks, mentorHref } =
     data;
@@ -41,13 +43,13 @@ export default function RoadmapPhaseHeader({ data = DEFAULT_ROADMAP_PHASE }) {
 
           <div>
             <div className="mb-1.5 text-[11px] font-semibold text-secondary">
-              PHASE {phaseNumber} OF {totalPhases}
+              {t("ui.roadmapPhase.phase", { current: phaseNumber, total: totalPhases })}
             </div>
             <h1 className="mb-2 font-display text-[22px] font-extrabold leading-tight text-ink">
               {title}
             </h1>
             <p className="max-w-lg text-[13px] leading-relaxed text-muted">
-              <span className="font-semibold text-ink">Goal:</span> {goal}
+              <span className="font-semibold text-ink">{t("ui.roadmapPhase.goal")}</span> {goal}
             </p>
           </div>
         </div>
@@ -59,7 +61,7 @@ export default function RoadmapPhaseHeader({ data = DEFAULT_ROADMAP_PHASE }) {
         >
           <Link to={localizedPath(mentorHref)}>
             <MessageSquare className="h-4 w-4" />
-            Ask Mentor
+            {t("ui.roadmapPhase.askMentor")}
           </Link>
         </Button>
       </div>
@@ -67,7 +69,7 @@ export default function RoadmapPhaseHeader({ data = DEFAULT_ROADMAP_PHASE }) {
       <div className="mt-5 flex items-center gap-4 border-t border-border pt-5">
         <div className="flex-1">
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-muted">COMPLETION</span>
+            <span className="text-[11px] font-semibold text-muted">{t("ui.roadmapPhase.completion")}</span>
             <span className="text-[13px] font-bold text-primary">{completion}%</span>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-background">
@@ -81,7 +83,7 @@ export default function RoadmapPhaseHeader({ data = DEFAULT_ROADMAP_PHASE }) {
           </div>
         </div>
         <div className="shrink-0 text-[12px] font-medium text-muted">
-          {tasksCompleted} of {totalTasks} tasks complete
+          {t("ui.roadmapPhase.tasksComplete", { completed: tasksCompleted, total: totalTasks })}
         </div>
       </div>
     </motion.div>

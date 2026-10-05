@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Briefcase, BarChart3, CheckCircle2, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 import ChatHeader from "../components/AiChatPage/ChatHeader";
 import MissingContextBanner from "../components/AiChatPage/MissingContextBanner";
@@ -10,43 +11,41 @@ import SuggestedPrompts from "../components/AiChatPage/SuggestedPrompts";
 import ChatInput from "../components/AiChatPage/ChatInput";
 
 /* ─── Demo data ─── */
-const DEMO_MESSAGES = [
+const createDemoMessages = (t) => [
   {
     id: 1,
     role: "user",
-    content: "Why am I a weak match for the Vercel frontend role?",
+    content: t("ui.chat.demoQuestion"),
   },
   {
     id: 2,
     role: "assistant",
-    content:
-      "Your match score for that role is 98%, so you're actually a strong candidate overall. The one gap pulling it down is System Design — it's listed as a core requirement and isn't confirmed on your profile yet. Everything else (React, TypeScript, Next.js) lines up well.",
+    content: t("ui.chat.demoAnswer"),
     sources: [
       {
         icon: Briefcase,
-        label: "Senior Frontend Engineer · Vercel",
+        label: t("ui.chat.sourceJob"),
         href: "#",
       },
-      { icon: BarChart3, label: "Skill gap: System Design", href: "#" },
+      { icon: BarChart3, label: t("ui.chat.sourceSkillGap"), href: "#" },
     ],
   },
   {
     id: 3,
     role: "user",
-    content: "What should I focus on this week?",
+    content: t("ui.chat.demoQuestionWeek"),
   },
   {
     id: 4,
     role: "assistant",
-    content:
-      "You're 75% through Phase 1 of your roadmap — one task left. Finishing it closes out the System Design foundations before you move into GraphQL and testing next week.",
+    content: t("ui.chat.demoAnswerWeek"),
     sources: [
       {
         icon: CheckCircle2,
-        label: "Task: Design a rate limiter",
+        label: t("ui.chat.sourceTask"),
         href: "#",
       },
-      { icon: Map, label: "Phase 1: Foundations", href: "#" },
+      { icon: Map, label: t("ui.chat.sourcePhase"), href: "#" },
     ],
   },
 ];
@@ -63,10 +62,22 @@ let nextId = 100;
  * }} props
  */
 export default function AiChat({ showMissingContext = false, className }) {
-  const [messages, setMessages] = useState(DEMO_MESSAGES);
+  const { t, i18n } = useTranslation("common");
+  const [messages, setMessages] = useState(() => createDemoMessages(t));
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    const refreshDemoMessages = () => {
+      setMessages((previous) => [
+        ...createDemoMessages(i18n.t.bind(i18n)),
+        ...previous.filter((message) => message.id >= 100),
+      ]);
+    };
+    i18n.on("languageChanged", refreshDemoMessages);
+    return () => i18n.off("languageChanged", refreshDemoMessages);
+  }, [i18n]);
 
   const handleSend = useCallback(
     (text) => {
@@ -87,11 +98,11 @@ export default function AiChat({ showMissingContext = false, className }) {
           {
             id: nextId++,
             role: "assistant",
-            content: `Thanks for asking! Here's some AI-grounded guidance based on your profile and saved jobs. This is a demo response for: "${text}"`,
+            content: t("ui.chat.responsePrefix", { question: text }),
             sources: [
               {
                 icon: Briefcase,
-                label: "Related job match",
+                label: t("ui.chat.relatedJob"),
                 href: "#",
               },
             ],
@@ -99,7 +110,7 @@ export default function AiChat({ showMissingContext = false, className }) {
         ]);
       }, 2000);
     },
-    [],
+    [t],
   );
 
   const handleRetry = useCallback(() => {
@@ -112,11 +123,11 @@ export default function AiChat({ showMissingContext = false, className }) {
         {
           id: nextId++,
           role: "assistant",
-          content: "Here's the response after retrying. Everything looks good now!",
+          content: t("ui.chat.retryResponse"),
         },
       ]);
     }, 1500);
-  }, []);
+  }, [t]);
 
   const handlePromptSelect = useCallback(
     (prompt) => {

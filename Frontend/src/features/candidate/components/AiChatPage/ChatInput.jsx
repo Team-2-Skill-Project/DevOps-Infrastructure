@@ -2,6 +2,7 @@ import { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 /**
  * Chat input with auto-resizing textarea + animated send button.
@@ -21,6 +22,7 @@ export default function ChatInput({
   disabled = false,
   className,
 }) {
+  const { t } = useTranslation("common");
   const textareaRef = useRef(null);
 
   const handleInput = useCallback(
@@ -68,7 +70,7 @@ export default function ChatInput({
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          placeholder="Ask about your profile, a job, or your roadmap…"
+          placeholder={t("ui.chat.inputPlaceholder")}
           className="max-h-24 min-h-0 flex-1 resize-none bg-transparent py-1.5 text-[13px] text-ink outline-none placeholder:text-muted disabled:opacity-50"
         />
 
@@ -89,7 +91,7 @@ export default function ChatInput({
       </div>
 
       <p className="mt-1.5 px-1 text-[11px] text-muted">
-        Mentor responses are grounded in your account data — not generic advice.
+        {t("ui.chat.grounded")}
       </p>
     </div>
   );

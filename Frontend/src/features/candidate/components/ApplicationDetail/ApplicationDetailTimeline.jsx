@@ -1,13 +1,15 @@
 import { Check, ClipboardList, Trophy, Users, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationDetailTimeline({
   viewState,
   isBannerState,
 }) {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="bg-white border border-border rounded-2xl p-6 mb-5 shadow-sm">
       <h2 className="font-display font-bold text-[15px] mb-5">
-        Application timeline
+        {t("pages.applicationDetail.timeline")}
       </h2>
 
       {!isBannerState ? (

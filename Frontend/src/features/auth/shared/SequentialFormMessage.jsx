@@ -1,6 +1,6 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FormMessage } from "@/components/ui/form";
+import { translateValidationMessage } from "@/components/shared/i18n/validationMessage";
 
 export default function SequentialFormMessage({
   name,
@@ -20,7 +20,9 @@ export default function SequentialFormMessage({
           exit={{ opacity: 0, y: -4, height: 0 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
         >
-          <FormMessage className="text-[11px] text-error" />
+          <p className="text-[11px] text-error">
+            {translateValidationMessage(errors[name].message)}
+          </p>
         </motion.div>
       )}
     </AnimatePresence>

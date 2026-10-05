@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Link } from "react-router-dom";
 import { useLocalizedPath } from "@/utils/routes";
+import { useTranslation } from "react-i18next";
 
 const CVS = [
   {
@@ -37,6 +38,7 @@ const CVS = [
 ];
 
 export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
+  const { t } = useTranslation("common");
   const { control, formState } = form;
   const { errors } = formState;
 
@@ -46,12 +48,12 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
         <div className="sticky top-0 z-10 flex items-start justify-between rounded-t-2xl border-b border-border bg-white p-6">
           <div>
             <div className="mb-1 text-[11px] font-bold text-secondary">
-              Job Application
+              {t("ui.jobApplication.title")}
             </div>
             <h2 className="text-lg font-bold text-primary">
               {job.title}{" "}
               <span className="text-sm font-normal text-muted">
-                at {job.company}
+                {t("ui.jobApplication.at")} {job.company}
               </span>
             </h2>
           </div>
@@ -61,7 +63,7 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
             variant="ghost"
             size="icon-sm"
             className="rounded-lg text-muted hover:bg-background"
-            title="Close"
+            title={t("ui.jobApplication.close")}
           >
             <X className="h-5 w-5" />
           </Button>
@@ -70,10 +72,10 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
         <div className="space-y-5 p-6">
           <div className="flex flex-wrap gap-2 text-[11px] font-bold">
             <span className="flex h-fit items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1 text-primary">
-              <Zap className="h-4 w-4" /> Method: Internal
+              <Zap className="h-4 w-4" /> {t("ui.jobApplication.method")}: Internal
             </span>
             <span className="flex h-fit items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1 text-primary">
-              <Send className="h-4 w-4" /> Source: MatchIn Feed
+              <Send className="h-4 w-4" /> {t("ui.jobApplication.source")}: MatchIn Feed
             </span>
           </div>
 
@@ -86,7 +88,7 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
                 className="flex items-center gap-2 rounded-xl border border-error/30 bg-[#FBEAE8] px-4 py-3 text-xs font-bold text-error"
               >
                 <CircleAlert className="h-4.5 w-4.5" />
-                Please correct the highlighted errors before submitting.
+                {t("ui.jobApplication.correctErrors")}
               </motion.div>
             )}
           </AnimatePresence>
@@ -101,28 +103,32 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
               <ResumeField control={control} />
               <div>
                 <Label className="mb-2 text-xs font-bold text-primary">
-                  Additional Note{" "}
-                  <span className="font-normal text-muted">(Optional)</span>
+                  {t("ui.jobApplication.additionalNote")}{" "}
+                  <span className="font-normal text-muted">{t("ui.jobApplication.optional")}</span>
                 </Label>
                 <Textarea
                   rows={3}
-                  placeholder="Add a short note for the hiring team — why are you a great fit?"
+                  placeholder={t("ui.jobApplication.notePlaceholder")}
                   className="resize-none rounded-xl border-border bg-background/50 p-3 text-xs focus-visible:border-primary focus-visible:ring-0"
                 />
               </div>
               <SelectField
                 control={control}
-                label="Are you legally authorized to work in this location?"
-                options={["Yes", "No", "Require Sponsorship"]}
+                label={t("ui.jobApplication.workAuthorization")}
+                options={[
+                  ["Yes", t("ui.jobApplication.yes")],
+                  ["No", t("ui.jobApplication.no")],
+                  ["Require Sponsorship", t("ui.jobApplication.sponsorship")],
+                ]}
               />
               <FormField
                 control={control}
                 name="startDate"
-                rules={{ required: "Please select your earliest start date." }}
+                rules={{ required: t("ui.jobApplication.startDateRequired") }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-xs font-bold text-primary">
-                      Earliest Start Date <span className="text-error">*</span>
+                      {t("ui.jobApplication.earliestStart")} <span className="text-error">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
@@ -146,14 +152,14 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
             variant="outline"
             className="h-10 rounded-xl px-5 text-xs font-bold text-primary hover:bg-background"
           >
-            Cancel
+            {t("ui.jobApplication.cancel")}
           </Button>
           <Button
             type="submit"
             form="job-application-form"
             className="h-10 flex-1 rounded-xl text-xs font-bold"
           >
-            Submit Application
+            {t("ui.jobApplication.submit")}
           </Button>
         </div>
       </div>
@@ -162,21 +168,22 @@ export default function JobApplicationModal({ job, form, onClose, onSubmit }) {
 }
 
 function ApplicantDetails() {
+  const { t } = useTranslation("common");
   const localizedPath = useLocalizedPath();
 
   return (
     <div>
       <div className="mb-2 text-[11px] font-bold text-muted">
-        Applicant Details
+        {t("ui.jobApplication.applicantDetails")}
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <ProfileInput label="Full Name" placeholder="Ahmed Mahmoud" />
-        <ProfileInput label="Email Address" placeholder="ahmed@example.com" />
+        <ProfileInput label={t("ui.jobApplication.fullName")} placeholder="Ahmed Mahmoud" />
+        <ProfileInput label={t("ui.jobApplication.email")} placeholder="ahmed@example.com" />
       </div>
       <div className="mt-1.5 text-[11px] text-muted">
-        Fetched from your profile —{" "}
+        {t("ui.jobApplication.profileFetched")}{" "}
         <Link to={localizedPath("/dashboard/profile")} className="font-bold text-primary hover:underline">
-          Edit Profile
+          {t("ui.jobApplication.editProfile")}
         </Link>
       </div>
     </div>
@@ -196,15 +203,16 @@ function ProfileInput({ label, placeholder }) {
 }
 
 function ResumeField({ control }) {
+  const { t } = useTranslation("common");
   return (
     <FormField
       control={control}
       name="cv"
-      rules={{ required: "Please select a resume to continue." }}
+      rules={{ required: t("ui.jobApplication.selectResumeRequired") }}
       render={({ field }) => (
         <FormItem>
           <FormLabel className="text-xs font-bold text-primary">
-            Select Resume (CV) <span className="text-error">*</span>
+            {t("ui.jobApplication.resume")} <span className="text-error">*</span>
           </FormLabel>
           <FormControl>
             <div className="space-y-2">
@@ -233,7 +241,7 @@ function ResumeField({ control }) {
                 variant="link"
                 className="h-auto px-0 pt-1 text-xs font-bold text-primary"
               >
-                <Upload className="h-4.5 w-4.5" /> Upload another CV
+                <Upload className="h-4.5 w-4.5" /> {t("ui.jobApplication.uploadCv")}
               </Button>
             </div>
           </FormControl>
@@ -245,11 +253,12 @@ function ResumeField({ control }) {
 }
 
 function SelectField({ control, label, options }) {
+  const { t } = useTranslation("common");
   return (
     <FormField
       control={control}
       name="authorized"
-      rules={{ required: "This field is required by the employer." }}
+      rules={{ required: t("ui.jobApplication.required") }}
       render={({ field }) => (
         <FormItem>
           <FormLabel className="text-xs font-bold text-primary">
@@ -258,13 +267,13 @@ function SelectField({ control, label, options }) {
           <Select value={field.value} onValueChange={field.onChange}>
             <FormControl>
               <SelectTrigger className="h-10 w-full rounded-xl bg-background text-xs">
-                <SelectValue placeholder="Select an answer" />
+                <SelectValue placeholder={t("ui.jobApplication.selectAnswer")} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
+              {options.map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
                 </SelectItem>
               ))}
             </SelectContent>

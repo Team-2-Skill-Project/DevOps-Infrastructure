@@ -1,13 +1,15 @@
 import { Briefcase } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import Status from "@/components/shared/Status";
 
 export function EmptySavedJobs() {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="bg-surface border border-border rounded-2xl shadow-xs">
       <Status
         icon={<Briefcase className="h-7 w-7 text-muted" />}
         iconClassName="border border-border bg-background"
-        title="No Saved Roles Found"
+        title={t("pages.savedJobs.empty")}
         subtitle="Your saved opportunities will appear here when you bookmark a role."
       />
     </div>

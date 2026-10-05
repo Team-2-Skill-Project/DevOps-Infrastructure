@@ -1,6 +1,8 @@
 import { Check, Flag, GraduationCap, Plus, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationDetailInsight() {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="bg-white border border-primary/15 rounded-3xl p-6 mb-5 shadow-sm relative overflow-hidden">
       <div className="absolute top-0 inset-e-0 w-40 h-40 bg-primary/5 rounded-full -me-16 -mt-16 pointer-events-none" />
@@ -10,7 +12,7 @@ export default function ApplicationDetailInsight() {
             <Sparkles className="h-4 w-4" />
           </div>
           <h2 className="font-display font-bold text-[15px]">
-            AI Application Insight
+            {t("pages.applicationDetail.insight")}
           </h2>
         </div>
 

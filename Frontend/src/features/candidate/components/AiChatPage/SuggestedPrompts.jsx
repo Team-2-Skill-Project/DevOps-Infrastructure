@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,12 +25,12 @@ const chipVariants = {
   exit: { opacity: 0, scale: 0.85, transition: { duration: 0.15 } },
 };
 
-const DEFAULT_PROMPTS = [
-  "What should I focus on this week?",
-  "Why am I a weak match for this job?",
-  "Which skill should I learn first?",
-  "How can I improve my profile for this role?",
-  "Which saved job should I prioritize?",
+const DEFAULT_PROMPT_KEYS = [
+  "ui.chat.promptWeek",
+  "ui.chat.promptWeakMatch",
+  "ui.chat.promptSkill",
+  "ui.chat.promptProfile",
+  "ui.chat.promptSavedJob",
 ];
 
 /**
@@ -43,11 +44,13 @@ const DEFAULT_PROMPTS = [
  * }} props
  */
 export default function SuggestedPrompts({
-  prompts = DEFAULT_PROMPTS,
+  prompts,
   visible = true,
   onSelect,
   className,
 }) {
+  const { t } = useTranslation("common");
+  const displayedPrompts = prompts ?? DEFAULT_PROMPT_KEYS.map((key) => t(key));
   return (
     <AnimatePresence>
       {visible && (
@@ -59,7 +62,7 @@ export default function SuggestedPrompts({
           className={cn("flex-shrink-0 px-4 pt-3", className)}
         >
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {prompts.map((prompt) => (
+            {displayedPrompts.map((prompt) => (
               <motion.button
                 key={prompt}
                 variants={chipVariants}

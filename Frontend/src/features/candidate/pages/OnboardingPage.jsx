@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ActionBanner from "@/components/shared/ActionBanner";
 
-import { ONBOARDING_STEP_FIELDS } from "@/constants/onboardingstepfields";
+import { ONBOARDING_STEP_FIELDS } from "@/features/candidate/shared/onboardingstepfields";
 import StepperHeader from "../components/OnboardingPage/StepperHeader";
 import OnboardingCompletedSummary from "../components/OnboardingPage/OnboardingCompletedSummary";
 import ChipSelectStep from "../components/OnboardingPage/ChipSelectStep";

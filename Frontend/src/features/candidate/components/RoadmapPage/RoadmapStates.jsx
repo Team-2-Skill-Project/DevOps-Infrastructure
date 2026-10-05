@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   UserRoundX, Upload, UserRoundCheck, 
   Loader2, AlertCircle, RotateCcw, 
@@ -7,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 export function EmptyProfileState({ onUploadCv, onCompleteProfile }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -15,7 +17,7 @@ export function EmptyProfileState({ onUploadCv, onCompleteProfile }) {
       <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-xl border border-border bg-background">
         <UserRoundX className="size-[26px] text-muted" />
       </div>
-      <h2 className="mb-2 font-display text-[19px] font-bold text-ink">We need a bit more profile info first</h2>
+      <h2 className="mb-2 font-display text-[19px] font-bold text-ink">{t("pages.roadmap.profileNeeded")}</h2>
       <p className="mx-auto mb-6 max-w-sm text-[13px] text-muted">
         A roadmap compares your current skills to a target role — complete your profile and upload a CV so we have something to compare against.
       </p>
@@ -28,13 +30,14 @@ export function EmptyProfileState({ onUploadCv, onCompleteProfile }) {
 }
 
 export function NoRoadmapState({ onGenerate }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
       className="rounded-2xl border border-border bg-surface p-8 shadow-sm"
     >
       <div className="mb-2 text-[11px] font-semibold text-secondary uppercase tracking-wide">Career Roadmap</div>
-      <h1 className="mb-2 font-display text-[24px] font-bold text-ink">Build your path to your next role</h1>
+      <h1 className="mb-2 font-display text-[24px] font-bold text-ink">{t("pages.roadmap.buildPath")}</h1>
       <p className="mb-7 max-w-lg text-[13px] text-muted">
         Pick a target role — or a job you've saved — and we'll compare it against your current profile to generate a phased plan with weekly tasks.
       </p>
@@ -65,6 +68,7 @@ export function NoRoadmapState({ onGenerate }) {
 }
 
 export function GeneratingState() {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
@@ -73,7 +77,7 @@ export function GeneratingState() {
       <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }} className="mx-auto mb-5 flex size-10 items-center justify-center">
         <Loader2 className="size-10 text-primary" />
       </motion.div>
-      <h2 className="mb-2 font-display text-[17px] font-bold text-ink">Building your roadmap</h2>
+      <h2 className="mb-2 font-display text-[17px] font-bold text-ink">{t("pages.roadmap.generating")}</h2>
       <p className="mx-auto max-w-sm text-[13px] text-muted">
         Comparing your profile against Senior Frontend Engineer requirements and prioritizing skill gaps — this takes a few seconds.
       </p>
@@ -82,6 +86,7 @@ export function GeneratingState() {
 }
 
 export function ErrorState({ onRetry }) {
+  const { t } = useTranslation("dashboard");
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
@@ -90,7 +95,7 @@ export function ErrorState({ onRetry }) {
       <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-xl border border-error/30 bg-error/10">
         <AlertCircle className="size-[26px] text-error" />
       </div>
-      <h2 className="mb-2 font-display text-[19px] font-bold text-ink">Couldn't generate your roadmap</h2>
+      <h2 className="mb-2 font-display text-[19px] font-bold text-ink">{t("pages.roadmap.generationFailed")}</h2>
       <p className="mx-auto mb-6 max-w-sm text-[13px] text-muted">
         Something went wrong on our end. Nothing was saved — you can try again.
       </p>

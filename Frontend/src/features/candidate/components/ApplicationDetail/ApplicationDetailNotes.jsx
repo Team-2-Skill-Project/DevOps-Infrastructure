@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationDetailNotes({
   notes,
@@ -8,10 +9,11 @@ export default function ApplicationDetailNotes({
   setNoteText,
   handleSaveNote,
 }) {
+  const { t } = useTranslation("dashboard");
   return (
     <div className="bg-white border border-border rounded-2xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display font-bold text-[15px]">Your notes</h2>
+        <h2 className="font-display font-bold text-[15px]">{t("pages.applicationDetail.notes")}</h2>
         <button
           type="button"
           onClick={() => setShowNoteForm((prev) => !prev)}

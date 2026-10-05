@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,7 +31,7 @@ import { loginSchema } from "../../schema/login-schema";
 
 const FIELD_ORDER = ["email", "password"];
 
-export default function LoginForm({ onSubmit }) {
+export default function LoginForm({ onSubmit, isPending = false, serverError = null }) {
   const localizedPath = useLocalizedPath();
   const { t } = useTranslation("common");
 
@@ -61,6 +61,12 @@ export default function LoginForm({ onSubmit }) {
           subTitle={t("auth.login.subtitle")}
         />
         <FieldGroup className="gap-5">
+          {serverError && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-[13px] font-medium text-red-600">
+              {serverError}
+            </div>
+          )}
+
           <FormField
             control={form.control}
             name="email"
@@ -74,6 +80,7 @@ export default function LoginForm({ onSubmit }) {
                     type="email"
                     placeholder={t("auth.login.emailPlaceholder")}
                     className="h-11.5 w-full rounded-[8px] border border-[#e2e8f0] bg-white px-4 py-3.5 text-[16px] text-[#0f172a] outline-none transition-all placeholder:text-[#e2e8f0] focus-visible:border-[#1d3557]"
+                    disabled={isPending}
                     {...field}
                   />
                 </FormControl>
@@ -97,6 +104,7 @@ export default function LoginForm({ onSubmit }) {
                 <FormControl>
                   <PasswordInput
                     placeholder={t("auth.login.passwordPlaceholder")}
+                    disabled={isPending}
                     {...field}
                   />
                 </FormControl>
@@ -137,10 +145,20 @@ export default function LoginForm({ onSubmit }) {
           <Field>
             <Button
               type="submit"
+              disabled={isPending}
               className="flex justify-center gap-2 duration-200 h-11.5 p-3.5 bg-primary hover:bg-primary/90 rounded-[8px] text-[15px] font-semibold cursor-pointer"
             >
-              {t("auth.login.submit")}{" "}
-              <ArrowRight width={20} className="font-bold" />
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("auth.login.submitting") ?? t("auth.login.submit")}
+                </>
+              ) : (
+                <>
+                  {t("auth.login.submit")}{" "}
+                  <ArrowRight width={20} className="font-bold" />
+                </>
+              )}
             </Button>
           </Field>
 

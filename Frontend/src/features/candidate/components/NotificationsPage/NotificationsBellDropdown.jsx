@@ -8,12 +8,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import NotificationsList from "./NotificationsList";
-import { MOCK_NOTIFICATIONS } from "@/constants/notificationsMock";
+import { MOCK_NOTIFICATIONS } from "@/features/candidate/shared/notificationsMock";
 import { useLocalizedPath } from "@/utils/routes";
+import { useTranslation } from "react-i18next";
 
 const PREVIEW_LIMIT = 4;
 
 export default function NotificationsBellDropdown() {
+  const { t } = useTranslation("common");
   const localizedPath = useLocalizedPath();
   const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -48,7 +50,7 @@ export default function NotificationsBellDropdown() {
 
       <PopoverContent align="end" className="w-80 border-border bg-surface p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <span className="text-[13px] font-bold text-ink">Notifications</span>
+          <span className="text-[13px] font-bold text-ink">{t("ui.notifications.title")}</span>
           {unreadCount > 0 && (
             <Button
               type="button"
@@ -58,7 +60,7 @@ export default function NotificationsBellDropdown() {
               className="h-auto gap-1 p-0 text-[11px] font-semibold text-primary hover:bg-transparent hover:text-primary/80"
             >
               <CheckCheck className="h-3.5 w-3.5" />
-              Mark all read
+              {t("ui.notifications.markAllRead")}
             </Button>
           )}
         </div>
@@ -76,7 +78,7 @@ export default function NotificationsBellDropdown() {
           to={localizedPath("/dashboard/notifications")}
           className="block border-t border-border px-4 py-2.5 text-center text-[12px] font-semibold text-primary hover:bg-background"
         >
-          View all notifications
+          {t("ui.notifications.viewAll")}
         </Link>
       </PopoverContent>
     </Popover>

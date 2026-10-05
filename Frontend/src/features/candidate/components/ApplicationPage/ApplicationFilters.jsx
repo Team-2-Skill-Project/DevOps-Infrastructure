@@ -8,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { STATUS_CONFIG } from "@/constants/application";
+import { STATUS_CONFIG } from "@/features/candidate/shared/application";
+import { useTranslation } from "react-i18next";
 
 export default function ApplicationFilters({
   searchQuery,
@@ -18,6 +19,7 @@ export default function ApplicationFilters({
   statusFilter,
   onStatusChange,
 }) {
+  const { t } = useTranslation("common");
   return (
     <>
       <div className="flex flex-col gap-2.5 sm:flex-row">
@@ -27,7 +29,7 @@ export default function ApplicationFilters({
             type="text"
             value={searchQuery}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search by job title or company…"
+            placeholder={t("ui.applicationFilters.search")}
             className="flex-1 h-auto border-0 p-0 outline-none text-[13.5px] placeholder:text-muted bg-transparent shadow-none focus-visible:ring-0"
           />
           {searchQuery && (
@@ -48,9 +50,9 @@ export default function ApplicationFilters({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="recent">Most recent update</SelectItem>
-            <SelectItem value="date">Application date</SelectItem>
-            <SelectItem value="match">Match level (high–low)</SelectItem>
+            <SelectItem value="recent">{t("ui.applicationFilters.recent")}</SelectItem>
+            <SelectItem value="date">{t("ui.applicationFilters.date")}</SelectItem>
+            <SelectItem value="match">{t("ui.applicationFilters.match")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

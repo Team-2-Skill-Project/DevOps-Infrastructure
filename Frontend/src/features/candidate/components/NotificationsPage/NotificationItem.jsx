@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { NOTIFICATION_TYPE_STYLES } from "@/constants/notificationTypeStyles";
+import { NOTIFICATION_TYPE_STYLES } from "@/features/candidate/shared/notificationTypeStyles";
 
 export default function NotificationItem({ notification, onMarkAsRead, compact = false }) {
   const style = NOTIFICATION_TYPE_STYLES[notification.type] ?? NOTIFICATION_TYPE_STYLES.job;

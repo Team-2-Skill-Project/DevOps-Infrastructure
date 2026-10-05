@@ -1,0 +1,22 @@
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowDown, ArrowUp, ChevronDown, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+
+export default function ListEditor({ title, items, titleKey, onChange, renderFields, blankItem, clone, tx, ease }) {
+  const [openIdx, setOpenIdx] = useState(null);
+  const [filter, setFilter] = useState("");
+  const filtered = useMemo(() => {
+    if (!filter) return items.map((item, index) => ({ item, index }));
+    const query = filter.toLowerCase();
+    return items.map((item, index) => ({ item, index })).filter(({ item }) => JSON.stringify(item).toLowerCase().includes(query));
+  }, [items, filter]);
+  const updateItem = (index, patch) => onChange(items.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
+  const move = (index, direction) => { const nextIndex = index + direction; if (nextIndex < 0 || nextIndex >= items.length) return; const next = [...items]; [next[index], next[nextIndex]] = [next[nextIndex], next[index]]; onChange(next); };
+  const remove = (index) => { if (!window.confirm("Delete this item?")) return; onChange(items.filter((_, itemIndex) => itemIndex !== index)); setOpenIdx(null); };
+  const add = () => { const next = [...items, clone(blankItem)]; onChange(next); setOpenIdx(next.length - 1); };
+
+  return <section className="col-span-2 mb-4 mt-2"><div className="mb-2 flex flex-wrap items-center gap-2"><h4 className="text-[11px] font-bold uppercase tracking-widest text-muted">{title}</h4><span className="rounded-full bg-background px-2 text-xs text-muted">{items.length}</span>{items.length > 4 && <Input value={filter} onChange={(event) => setFilter(event.target.value)} placeholder="Search…" className="ml-auto h-8 w-40 text-sm" />}<Button type="button" size="sm" onClick={add} className={cn("gap-1 bg-primary text-primary-foreground hover:bg-primary/90", items.length <= 4 && "ml-auto")}><Plus className="h-4 w-4" /> Add</Button></div><div className="space-y-2">{filtered.length === 0 && <p className="py-2 text-sm text-muted">Nothing here yet — press “+ Add”.</p>}{filtered.map(({ item, index }) => { const open = openIdx === index; const heading = tx(item[titleKey]) || "(untitled)"; return <div key={index} className={cn("rounded-xl border border-border bg-surface", item.visible === false && "opacity-60")}><div className="flex cursor-pointer select-none items-center gap-2 rounded-xl px-3 py-2 hover:bg-background/60" onClick={() => setOpenIdx(open ? null : index)}><span className="w-6 text-xs text-muted">{index + 1}</span><span className="min-w-0 flex-1"><b className="block truncate text-sm text-ink">{heading}</b></span>{item.visible === false && <span className="text-[10px] font-bold uppercase text-muted">Hidden</span>}<button type="button" className="rounded p-1 text-muted hover:bg-background disabled:opacity-30" disabled={index === 0} onClick={(event) => { event.stopPropagation(); move(index, -1); }} title="Move up"><ArrowUp className="h-4 w-4" /></button><button type="button" className="rounded p-1 text-muted hover:bg-background disabled:opacity-30" disabled={index >= items.length - 1} onClick={(event) => { event.stopPropagation(); move(index, 1); }} title="Move down"><ArrowDown className="h-4 w-4" /></button><button type="button" className="rounded p-1 text-muted hover:bg-background" onClick={(event) => { event.stopPropagation(); updateItem(index, { visible: item.visible === false }); }} title="Show / hide">{item.visible === false ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</button><button type="button" className="rounded p-1 text-muted hover:bg-background hover:text-error" onClick={(event) => { event.stopPropagation(); remove(index); }} title="Delete"><Trash2 className="h-4 w-4" /></button><ChevronDown className={cn("h-4 w-4 text-muted transition", open && "rotate-180")} /></div><AnimatePresence initial={false}>{open && <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease }} className="overflow-hidden border-t border-border"><div className="grid grid-cols-2 gap-3 p-3">{renderFields(item, (patch) => updateItem(index, patch))}</div></motion.div>}</AnimatePresence></div>; })}</div></section>;
+}

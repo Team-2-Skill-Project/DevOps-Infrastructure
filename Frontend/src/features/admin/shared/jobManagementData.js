@@ -1,0 +1,146 @@
+/**
+ * Static mock dataset for the Job Management feature.
+ * Swap with an API/service result when wiring real data.
+ */
+export const INITIAL_JOBS = [
+  {
+    id: 1,
+    title: "Senior Frontend Engineer",
+    company: "Vercel",
+    initials: "V",
+    colorScheme: "from-primary to-[#0F2036]",
+    location: "Remote",
+    type: "Full-time",
+    status: "active",
+    source: "internal",
+    sourceLabel: "Internal",
+    freshness: "New · 3h ago",
+    freshnessDays: 0.1,
+    pubDate: "Sep 15",
+    createdDate: "Sep 15",
+    rawPubDate: "2026-09-15",
+    rawCreatedDate: "2026-09-15",
+  },
+  {
+    id: 2,
+    title: "Lead Frontend Architect",
+    company: "Stripe",
+    initials: "S",
+    colorScheme: "from-[#635BFF] to-[#3B31D6]",
+    location: "San Francisco",
+    type: "Hybrid · Full-time",
+    status: "active",
+    source: "external",
+    sourceLabel: "LinkedIn",
+    freshness: "Fresh · 2d ago",
+    freshnessDays: 2,
+    pubDate: "Sep 11",
+    createdDate: "Sep 10",
+    rawPubDate: "2026-09-11",
+    rawCreatedDate: "2026-09-10",
+  },
+  {
+    id: 3,
+    title: "Backend Engineer",
+    company: "PulseHealth",
+    initials: "P",
+    colorScheme: "from-[#0EA5A5] to-[#0B7D7D]",
+    location: "Cairo, Egypt",
+    type: "Onsite · Full-time",
+    status: "active",
+    source: "external",
+    sourceLabel: "Indeed",
+    freshness: "Stale · 20d ago",
+    freshnessDays: 20,
+    pubDate: "Aug 22",
+    createdDate: "Aug 20",
+    rawPubDate: "2026-08-22",
+    rawCreatedDate: "2026-08-20",
+  },
+  {
+    id: 4,
+    title: "Frontend Infra Engineer",
+    company: "CloudScale Systems",
+    initials: "C",
+    colorScheme: "canvas",
+    location: "Remote",
+    type: "Full-time",
+    status: "draft",
+    source: "internal",
+    sourceLabel: "Internal",
+    freshness: "Not published",
+    freshnessDays: 0,
+    pubDate: "—",
+    createdDate: "Sep 18",
+    rawPubDate: "",
+    rawCreatedDate: "2026-09-18",
+  },
+  {
+    id: 5,
+    title: "Full Stack Engineer",
+    company: "FinEdge Solutions",
+    initials: "F",
+    colorScheme: "from-[#9C432A] to-[#C86A4C]",
+    location: "Riyadh, KSA",
+    type: "Onsite · Full-time",
+    status: "expired",
+    source: "external",
+    sourceLabel: "Referral",
+    freshness: "Stale · 45d ago",
+    freshnessDays: 45,
+    pubDate: "Jul 2",
+    createdDate: "Jul 1",
+    rawPubDate: "2026-07-02",
+    rawCreatedDate: "2026-07-01",
+  },
+  {
+    id: 6,
+    title: "Junior Frontend Developer",
+    company: "TechNova Solutions",
+    initials: "T",
+    colorScheme: "canvas",
+    location: "Cairo, Egypt",
+    type: "Hybrid · Full-time",
+    status: "closed",
+    source: "internal",
+    sourceLabel: "Internal",
+    freshness: "Stale · 60d ago",
+    freshnessDays: 60,
+    pubDate: "Jun 11",
+    createdDate: "Jun 10",
+    rawPubDate: "2026-06-11",
+    rawCreatedDate: "2026-06-10",
+  },
+];
+
+/** Status filter options. */
+export const STATUS_FILTERS = [
+  { id: "all", label: "All statuses" },
+  { id: "active", label: "Active" },
+  { id: "draft", label: "Draft" },
+  { id: "expired", label: "Expired" },
+  { id: "closed", label: "Closed" },
+];
+
+/** Source filter options. */
+export const SOURCE_FILTERS = [
+  { id: "internal", label: "Internal" },
+  { id: "external", label: "External sources" },
+];
+
+/** Sort options for the toolbar dropdown. */
+export const SORT_OPTIONS = [
+  { value: "created-desc", label: "Newest created" },
+  { value: "published-desc", label: "Recently published" },
+  { value: "freshness", label: "Freshness (newest first)" },
+];
+
+/** Desktop column headers for the job list grid. */
+export const JOB_COLUMNS = [
+  { label: "Job / Company", className: "col-span-4" },
+  { label: "Location & Mode", className: "col-span-2" },
+  { label: "Status", className: "col-span-2" },
+  { label: "Source & Freshness", className: "col-span-2" },
+  { label: "Dates", className: "col-span-1" },
+  { label: "Actions", className: "col-span-1 text-right" },
+];

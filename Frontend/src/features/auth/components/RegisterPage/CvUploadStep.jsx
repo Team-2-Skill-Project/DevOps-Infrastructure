@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Upload, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { Upload, Loader2, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { cvFileSchema } from "@/features/auth/schema/cv-schema";
 import { useState } from "react";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/components/shared/i18n/validationMessage";
 
 function formatSize(bytes) {
   return `${(bytes / 1024).toFixed(0)} KB`;
@@ -35,7 +36,7 @@ export function CvUploadStep({ onComplete, onSkip }) {
     if (!candidate) return;
     const result = cvFileSchema.safeParse(candidate);
     if (!result.success) {
-      setError(result.error.issues[0]?.message ?? "Invalid file");
+      setError(translateValidationMessage(result.error.issues[0]?.message ?? ""));
       return;
     }
     setError(null);
@@ -114,7 +115,9 @@ export function CvUploadStep({ onComplete, onSkip }) {
         )}
 
         {error && (
-          <p className="mt-2 text-[11.5px] font-semibold text-error">{error}</p>
+          <p className="mt-2 text-[11.5px] font-semibold text-error">
+            {translateValidationMessage(error)}
+          </p>
         )}
 
         {file && (

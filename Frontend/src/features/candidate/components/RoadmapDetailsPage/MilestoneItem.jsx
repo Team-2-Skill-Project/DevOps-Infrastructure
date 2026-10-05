@@ -1,4 +1,4 @@
-import { MILESTONE_STATUS_STYLES } from "@/constants/milestoneStatusStyles";
+import { MILESTONE_STATUS_STYLES } from "@/features/candidate/shared/milestoneStatusStyles";
 import { motion } from "framer-motion";
 
 export default function MilestoneItem({ milestone, index = 0, isLast = false }) {

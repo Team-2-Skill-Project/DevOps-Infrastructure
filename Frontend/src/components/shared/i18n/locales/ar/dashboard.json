@@ -7,11 +7,17 @@
     "cvManagement": "إدارة السيرة الذاتية",
     "aiChat": "محادثة الذكاء الاصطناعي",
     "roadmap": "المسار المهني",
-    "applicationTracker": "متابعة الطلبات"
+    "applicationTracker": "متابعة الطلبات",
+    "jobManagement": "إدارة الوظائف",
+    "companymanagement": "إدارة الشركات",
+    "usermanagement": "إدارة المستخدمين",
+    "auditLogs": "سجلات التدقيق",
+    "cms": "إدارة الصفحة الرئيسية"
   },
   "actions": {
     "collapseSidebar": "طي الشريط الجانبي",
-    "expandSidebar": "توسيع الشريط الجانبي"
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "back": "رجوع"
   },
   "mentor": {
     "title": "هل تحتاج إلى مساعدة؟",
@@ -87,6 +93,219 @@
       "openRoadmap": "فتح المسار المهني",
       "description": "مرتبة حسب تأثيرها على دورك المستهدف.",
       "empty": "لم يتم تحديد فجوات في المهارات بعد."
+    }
+  },
+  "pages": {
+    "admin": {
+      "overview": {
+        "title": "لوحة تحكم المسؤول",
+        "subtitle": "نظرة عامة على المنصة وملخص العمليات"
+      },
+      "jobManagement": {
+        "title": "إدارة الوظائف",
+        "subtitle": "تابع كل الوظائف المنشورة على SkillMatch وأدرها، بما فيها الوظائف الداخلية والمصادر الخارجية."
+      },
+      "companies": {
+        "title": "إدارة الشركات",
+        "subtitle": "استعرض الشركات المسجلة على المنصة وتحقق منها وأدرها"
+      },
+      "userManagement": "إدارة المستخدمين",
+      "auditLogs": "سجلات التدقيق",
+      "companies": "الشركات",
+      "companyManagement": "إدارة الشركات",
+      "auditLogDetails": "تفاصيل سجل التدقيق",
+      "cms": "محتوى الصفحة الرئيسية",
+      "userNotFound": "لم يتم العثور على المستخدم",
+      "userLoadFailed": "تعذر تحميل المستخدم",
+      "jobNotFound": "لم يتم العثور على الوظيفة",
+      "userDetails": {
+        "personalInformation": "المعلومات الشخصية",
+        "accountInformation": "معلومات الحساب",
+        "careerProfile": "ملخص الملف المهني",
+        "cvStatus": "حالة السيرة الذاتية",
+        "applications": "ملخص الطلبات",
+        "savedJobs": "ملخص الوظائف المحفوظة",
+        "roleStatus": "الدور والحالة",
+        "dates": "التواريخ",
+        "quickLinks": "روابط سريعة"
+      },
+      "auditDetails": {
+        "actor": "المسؤول / المنفذ",
+        "entity": "العنصر",
+        "changes": "التغييرات",
+        "relatedEntities": "العناصر المرتبطة"
+      },
+      "jobManagementStates": {
+        "empty": "لا توجد وظائف على المنصة بعد",
+        "loadFailed": "تعذر تحميل الوظائف"
+      },
+      "userManagementStates": {
+        "loadFailed": "تعذر تحميل المستخدمين",
+        "empty": "لا يوجد مستخدمون بعد",
+        "noResults": "لم يتم العثور على نتائج",
+        "addUser": "إضافة مستخدم جديد",
+        "editUser": "تعديل المستخدم",
+        "changeRole": "تغيير الدور",
+        "activateUser": "تفعيل المستخدم؟",
+        "deactivateUser": "إلغاء تفعيل المستخدم؟",
+        "deleteUser": "حذف هذا المستخدم؟"
+      },
+      "companyDetails": {
+        "companyInformation": "معلومات الشركة",
+        "contactInformation": "معلومات التواصل",
+        "coreProfileDetails": "بيانات الملف الأساسي",
+        "jobs": "الوظائف",
+        "activity": "النشاط",
+        "dates": "التواريخ",
+        "quickLinks": "روابط سريعة",
+        "verificationStatus": "حالة التوثيق",
+        "markAsVerified": "شركة موثقة",
+        "verifiedHint": "هذه الشركة موثقة وتظهر بشارة التوثيق.",
+        "pendingHint": "هذه الشركة لا تزال قيد المراجعة.",
+        "editCompany": "تعديل الشركة",
+        "backToCompanies": "العودة إلى الشركات",
+        "saveChanges": "حفظ التغييرات",
+        "viewAllJobs": "عرض كل الوظائف ←",
+        "viewAll": "عرض الكل ←",
+        "reject": "رفض",
+        "reEvaluate": "إعادة التقييم",
+        "status": {
+          "pending": "قيد الانتظار",
+          "verified": "موثقة",
+          "rejected": "مرفوضة"
+        },
+        "banner": {
+          "pending": "التوثيق قيد الانتظار",
+          "verified": "تم توثيق الشركة",
+          "rejected": "تم رفض التوثيق"
+        },
+        "bannerDescriptions": {
+          "pending": "تم الإرسال للمراجعة · ٢٢ سبتمبر ٢٠٢٦ · منذ ٤١ دقيقة",
+          "verified": "تم التوثيق في ٢٢ سبتمبر ٢٠٢٦",
+          "rejected": "الطلب لا يستوفي الإرشادات"
+        },
+        "dateLabels": {
+          "created": "تاريخ الإنشاء",
+          "lastUpdated": "آخر تحديث",
+          "submitted": "تاريخ الإرسال"
+        },
+        "stats": {
+          "openJobs": "الوظائف المفتوحة",
+          "totalApplications": "إجمالي الطلبات",
+          "created": "تاريخ الإنشاء",
+          "lastUpdated": "آخر تحديث"
+        },
+        "fields": {
+          "companyName": "اسم الشركة",
+          "legalName": "الاسم القانوني",
+          "industry": "القطاع",
+          "companySize": "حجم الشركة",
+          "website": "الموقع الإلكتروني",
+          "headquarters": "المقر الرئيسي",
+          "about": "نبذة",
+          "primaryEmail": "البريد الإلكتروني الأساسي",
+          "phone": "الهاتف",
+          "hrEmail": "بريد الموارد البشرية",
+          "linkedin": "لينكدإن"
+        },
+        "links": {
+          "jobs": "عرض وظائف الشركة",
+          "activity": "عرض النشاط",
+          "auditLogs": "سجلات التدقيق"
+        }
+      },
+      "jobDetails": {
+        "loadFailed": "تعذر تحميل هذه الوظيفة",
+        "description": "الوصف",
+        "responsibilities": "المسؤوليات",
+        "requiredSkills": "المهارات المطلوبة",
+        "preferredSkills": "المهارات المفضلة",
+        "sourceAndMethod": "المصدر وطريقة التقديم",
+        "status": "حالة الوظيفة"
+      }
+    },
+    "applicationTracker": {
+      "title": "متابعة الطلبات",
+      "description": "جميع طلبات التوظيف التي أرسلتها في مكان واحد، مع مرحلتها الحالية وخطوتها التالية."
+    },
+    "recommendedOpportunities": "فرص موصى بها",
+    "cvManagement": {
+      "title": "إدارة السيرة الذاتية ومراجعة استخراج الذكاء الاصطناعي",
+      "description": "ارفع سيرتك الذاتية وراجع البيانات التي استخرجها الذكاء الاصطناعي وتحقق منها."
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "unread": "{{count}} غير مقروء",
+      "caughtUp": "أنت على اطلاع بكل جديد"
+    },
+    "savedJobs": {
+      "title": "الفرص المحفوظة",
+      "description": "أدر الوظائف التي حفظتها وراجعها.",
+      "empty": "لم يتم العثور على وظائف محفوظة"
+    },
+    "applicationStates": {
+      "empty": "لا توجد طلبات بعد",
+      "loadFailed": "تعذر تحميل طلباتك"
+    },
+    "jobDetails": {
+      "notFound": "لم يتم العثور على إعلان الوظيفة",
+      "loadFailed": "تعذر تحميل تفاصيل الوظيفة",
+      "scope": "النطاق المعماري والمهام",
+      "responsibilities": "المسؤوليات والمخرجات الأساسية",
+      "requirements": "مصفوفة المتطلبات التقنية",
+      "mandatoryStack": "التقنيات الأساسية المطلوبة",
+      "preferredSkills": "المهارات الإضافية والمفضلة"
+    },
+    "applicationJobDetails": {
+      "interview": "تفاصيل المقابلة",
+      "assessment": "تفاصيل التقييم"
+    },
+    "applicationSubmission": {
+      "checkingStatus": "جارٍ التحقق من حالة الطلب",
+      "submitting": "جارٍ إرسال طلبك",
+      "submitted": "تم إرسال الطلب بنجاح",
+      "alreadyApplied": "تم التقديم مسبقًا",
+      "failed": "تعذر إرسال الطلب"
+    },
+    "onboarding": {
+      "complete": "أنت جاهز تمامًا",
+      "preferences": "التفضيلات التي اخترتها"
+    },
+    "applicationDetail": {
+      "submittedInformation": "المعلومات المقدمة",
+      "submittedCv": "السيرة الذاتية المقدمة",
+      "timeline": "الجدول الزمني للطلب",
+      "notes": "ملاحظاتك",
+      "insight": "تحليل الطلب بالذكاء الاصطناعي",
+      "loadFailed": "تعذر تحميل هذا الطلب",
+      "notFound": "لم يتم العثور على الطلب"
+    },
+    "profile": {
+      "workExperience": "الخبرات العملية",
+      "projects": "المشاريع",
+      "education": "التعليم والمؤهلات",
+      "personalInformation": "المعلومات الشخصية",
+      "careerPreferences": "التفضيلات المهنية (الوظيفة المستهدفة)",
+      "skills": "المهارات وتقييم الذكاء الاصطناعي",
+      "editPersonalInformation": "إضافة أو تعديل المعلومات الشخصية",
+      "editCareerPreferences": "تعديل التفضيلات المهنية",
+      "addSkill": "إضافة مهارة"
+    },
+    "aiChat": {
+      "emptyTitle": "اسأل مرشدك عن أي شيء"
+    },
+    "roadmap": {
+      "profileNeeded": "نحتاج إلى مزيد من المعلومات عن ملفك الشخصي أولًا",
+      "buildPath": "ارسم مسارك نحو وظيفتك القادمة",
+      "generating": "جارٍ إعداد مسارك المهني",
+      "generationFailed": "تعذر إنشاء مسارك المهني",
+      "priorityGaps": "فجوات المهارات ذات الأولوية",
+      "phases": "مراحل المسار المهني",
+      "weeklyTasks": "مهام هذا الأسبوع",
+      "completedTasks": "المهام المكتملة",
+      "milestones": "المحطات الرئيسية",
+      "phaseSkills": "المهارات المشمولة في هذه المرحلة",
+      "phaseWeeklyTasks": "مهام هذا الأسبوع في المرحلة"
     }
   }
 }

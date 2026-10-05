@@ -1,87 +1,71 @@
-import * as React from "react";
-import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-function StepBar({ label, value, state }) {
+function StepBar({ label, index, state }) {
   const isActive = state === "active";
   const isComplete = state === "complete";
 
   return (
-    <div className="flex flex-1 flex-col gap-2">
-      <Progress
-        value={value}
-        className="h-1.5 bg-border"
-        indicatorClassName={cn(
-          "transition-colors duration-500",
-          isComplete ? "bg-success" : "bg-primary",
+    <div
+      className="flex min-w-0 flex-1 flex-col gap-2"
+      aria-current={isActive ? "step" : undefined}
+      role="listitem"
+    >
+      <div
+        className={cn(
+          "h-1.5 w-full rounded-full transition-colors duration-300",
+          isComplete && "bg-success",
+          isActive && "bg-primary",
+          state === "upcoming" && "bg-border",
         )}
       />
 
-      <span
+      <div
         className={cn(
-          "text-[12px] font-[600] transition-colors",
-          (isActive || isComplete) && "font-medium text-ink",
-          !isActive && !isComplete && "text-muted",
+          "break-words text-[11px] font-semibold leading-4 transition-colors sm:text-xs",
+          (isActive || isComplete) && "text-ink",
+          state === "upcoming" && "text-muted",
         )}
       >
+        <span className="mb-1 block text-[10px] font-medium text-muted">
+          {String(index + 1).padStart(2, "0")}
+        </span>
         {label}
-      </span>
-    </div>
-  );
-}
-
- // StepProgress
-
-export function StepProgress({ steps, currentStep = 0 }) {
-  return (
-    <div className="w-full rounded-xl bg-background p-6">
-      <div className="flex w-full items-start gap-4">
-        {steps.map((label, index) => {
-          const state =
-            index < currentStep
-              ? "complete"
-              : index === currentStep
-                ? "active"
-                : "upcoming";
-
-          const value =
-            index < currentStep ? 100 : index === currentStep ? 100 : 0;
-
-          return (
-            <StepBar key={label} label={label} value={value} state={state} />
-          );
-        })}
       </div>
     </div>
   );
 }
 
-export default function Demo() {
-  const [step, setStep] = React.useState(0);
-  const steps = [
-    "Create account",
-    "Verify email",
-    "Upload CV",
-    "Complete profile",
-  ];
+export function StepProgress({ steps, currentStep = 0 }) {
+  const progressSteps = Array.isArray(steps) ? steps : [];
+  const activeStep = Math.min(
+    Math.max(currentStep, 0),
+    progressSteps.length - 1,
+  );
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6 p-8">
-      <StepProgress steps={steps} currentStep={step} />
+    <div className="w-full rounded-xl bg-background px-1 py-2">
+      <div
+        className="grid w-full items-start gap-3"
+        style={{ gridTemplateColumns: `repeat(${progressSteps.length}, minmax(0, 1fr))` }}
+        role="list"
+      >
+        {progressSteps.map((label, index) => {
+          const state =
+            index < activeStep
+              ? "complete"
+              : index === activeStep
+                ? "active"
+                : "upcoming";
 
-      <div className="flex justify-center gap-3">
-        <button
-          onClick={() => setStep((s) => Math.max(0, s - 1))}
-          className="rounded-lg border border-border px-4 py-2 text-[12px] font-[600] text-ink hover:bg-background"
-        >
-          Back
-        </button>
-        <button
-          onClick={() => setStep((s) => Math.min(steps.length - 1, s + 1))}
-          className="rounded-lg bg-primary px-4 py-2 text-[12px] font-[600] text-white hover:opacity-90"
-        >
-          Next
-        </button>
+          return (
+            <StepBar
+              key={`${index}-${label}`}
+              label={label}
+              index={index}
+              state={state}
+            />
+          );
+        })}
       </div>
     </div>
   );

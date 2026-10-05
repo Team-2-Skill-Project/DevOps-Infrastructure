@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Pencil } from "lucide-react";
 import TabSaveActions from "./TabSaveActions";
 
 
 export default function PersonalInfoTab() {
+  const { t } = useTranslation("dashboard");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -38,7 +40,7 @@ export default function PersonalInfoTab() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold text-slate-900 tracking-tight">
-          Personal Information
+          {t("pages.profile.personalInformation")}
         </h3>
 
         <button
@@ -73,7 +75,7 @@ export default function PersonalInfoTab() {
       <TabSaveActions
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}
-        title="Add / Edit Personal Information"
+        title={t("pages.profile.editPersonalInformation")}
         confirmLabel="Save"
         isLoading={isSaving}
         loadingLabel="Saving..."

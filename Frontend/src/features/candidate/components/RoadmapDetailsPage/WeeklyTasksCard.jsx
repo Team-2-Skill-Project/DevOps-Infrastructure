@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import TaskRow from "./TaskRow";
 import TaskDetailModal from "./TaskDetailModal";
-import { WEEKLY_TASKS } from "@/constants/weeklyTasksMock";
+import { WEEKLY_TASKS } from "@/features/candidate/shared/weeklyTasksMock";
 
 export default function WeeklyTasksCard({ initialTasks = WEEKLY_TASKS }) {
+  const { t } = useTranslation("dashboard");
   const [tasks, setTasks] = useState(initialTasks);
   const [openTaskId, setOpenTaskId] = useState(null);
 
@@ -34,7 +36,7 @@ export default function WeeklyTasksCard({ initialTasks = WEEKLY_TASKS }) {
       className="rounded-3xl border border-border bg-surface p-6 shadow-sm"
     >
       <h2 className="mb-4 font-display text-[15px] font-bold text-ink">
-        This phase&apos;s weekly actions
+        {t("pages.roadmap.phaseWeeklyTasks")}
       </h2>
 
       <div className="space-y-2.5">

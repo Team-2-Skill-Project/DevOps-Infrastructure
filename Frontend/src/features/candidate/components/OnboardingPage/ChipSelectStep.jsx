@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Search, ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { requiredFieldSchema } from "../../schema/onboardingSchema";
+import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/components/shared/i18n/validationMessage";
 
 export default function ChipSelectStep({
   stepConfig,
@@ -10,6 +12,8 @@ export default function ChipSelectStep({
   onPrevious,
   isFirstStep,
 }) {
+  const { t } = useTranslation("common");
+  const copy = t(`ui.onboarding.${stepConfig.field}`, { returnObjects: true });
   const {
     field,
     title,
@@ -35,8 +39,8 @@ export default function ChipSelectStep({
 
   return (
     <div>
-      <h2 className="mb-1.5 text-[20px] font-bold text-ink">{title}</h2>
-      <p className="mb-6 text-[13px] text-muted">{subtitle}</p>
+      <h2 className="mb-1.5 text-[20px] font-bold text-ink">{copy.title ?? title}</h2>
+      <p className="mb-6 text-[13px] text-muted">{copy.subtitle ?? subtitle}</p>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
@@ -44,7 +48,7 @@ export default function ChipSelectStep({
             htmlFor={field}
             className="mb-1.5 block text-[13px] font-semibold text-ink"
           >
-            {inputLabel}
+            {copy.inputLabel ?? inputLabel}
           </label>
           <div className="relative">
             <Search className="absolute inset-s-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -56,23 +60,25 @@ export default function ChipSelectStep({
                 setInputValue(e.target.value);
                 if (error) setError("");
               }}
-              placeholder={placeholder}
+              placeholder={copy.placeholder ?? placeholder}
               className={`w-full rounded-xl border bg-surface py-3 ps-10 pe-3.5 text-[14px] text-ink outline-none transition-colors placeholder:text-muted focus:border-primary ${
                 error ? "border-error" : "border-border"
               }`}
             />
           </div>
           {error && (
-            <p className="mt-1.5 text-[12px] font-medium text-error">{error}</p>
+            <p className="mt-1.5 text-[12px] font-medium text-error">
+              {translateValidationMessage(error)}
+            </p>
           )}
         </div>
 
         <div className="mb-8">
           <span className="mb-2 block text-[12px] font-medium text-muted">
-            {suggestionsLabel}
+            {copy.suggestionsLabel ?? suggestionsLabel}
           </span>
           <div className="flex flex-wrap gap-2">
-            {suggestions.map((option) => (
+            {suggestions.map((option, index) => (
               <button
                 key={option}
                 type="button"
@@ -86,7 +92,7 @@ export default function ChipSelectStep({
                     : "border-border bg-surface text-muted hover:border-primary/40 hover:text-primary"
                 }`}
               >
-                {option}
+                {copy.suggestions?.[index] ?? option}
               </button>
             ))}
           </div>
@@ -101,13 +107,13 @@ export default function ChipSelectStep({
             className="h-11 flex-1 gap-1.5 rounded-xl border-border text-[13px] font-bold text-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ArrowLeft className="h-4 w-4" />
-            Previous
+            {t("ui.onboarding.previous")}
           </Button>
           <Button
             type="submit"
             className="h-11 flex-1 gap-1.5 rounded-xl bg-primary text-[13px] font-bold text-primary-foreground hover:bg-primary/90"
           >
-            Continue
+            {t("ui.onboarding.continue")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

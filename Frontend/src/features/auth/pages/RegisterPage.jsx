@@ -40,7 +40,7 @@ export default function RegisterPage() {
   };
 
   const handleProfileBack = () => {
-    setStep(0);
+    setStep(2);
   };
 
   const handleProfileFinish = (profileData) => {
@@ -61,9 +61,7 @@ export default function RegisterPage() {
       }}
       additional={
         <StepProgress
-          steps={[
-            t("auth.register.steps", { returnObjects: true }),
-          ]}
+          steps={t("auth.register.steps", { returnObjects: true })}
           currentStep={step}
         />
       }

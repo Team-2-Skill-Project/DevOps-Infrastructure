@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { AlertCircle, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const shakeAnimation = {
   initial: { opacity: 0, x: 0, y: 14 },
@@ -27,6 +28,7 @@ const shakeAnimation = {
  * @param {{ onRetry?: () => void }} props
  */
 export default function ErrorMessage({ onRetry }) {
+  const { t } = useTranslation("common");
   return (
     <div className="flex justify-start">
       <motion.div
@@ -39,10 +41,10 @@ export default function ErrorMessage({ onRetry }) {
         <div className="rounded-2xl rounded-tl-md border border-error/30 bg-error/5 px-4 py-3">
           <p className="flex items-center gap-1.5 text-[13px] font-semibold text-error">
             <AlertCircle className="size-4" />
-            Couldn&apos;t get a response
+            {t("ui.chat.couldNotRespond")}
           </p>
           <p className="mt-1 text-[12px] text-muted">
-            Something went wrong on our end. Your question wasn&apos;t lost.
+            {t("ui.chat.responseError")}
           </p>
         </div>
 
@@ -53,7 +55,7 @@ export default function ErrorMessage({ onRetry }) {
           className="mt-2 gap-1.5 text-[12px] font-semibold text-primary"
         >
           <RotateCcw className="size-3.5" />
-          Retry
+          {t("ui.chat.retry")}
         </Button>
       </motion.div>
     </div>

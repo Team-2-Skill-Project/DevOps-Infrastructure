@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import logoIcon from "@/assets/logo/MatchIn_logo.svg";
 import AuthHeader from "@/features/auth/shared/AuthHeader";
 import SecurityNotice from "@/features/auth/shared/SecurityNotice";
+import { useForgotPasswordMutation } from "@/features/auth/hooks/useForgotPasswordMutation";
+import { useLocalizedPath } from "@/utils/routes";
 
 // 1. Zod Schema
 const emailSchema = z
@@ -19,19 +22,29 @@ const emailSchema = z
 
 export default function ForgetPasswordPage() {
   const { t } = useTranslation("common");
+  const navigate = useNavigate();
+  const localizedPath = useLocalizedPath();
 
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [status, setStatus] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isTimeout, setIsTimeout] = useState(false);
 
-  const handleSubmit = async (e) => {
+  // Success means "code sent" — hand the email to the OTP step via router state.
+  const { mutate, isPending, isError, error } = useForgotPasswordMutation({
+    onSuccess: () =>
+      navigate(localizedPath("/auth/forgot-password/verify-otp"), {
+        state: { email },
+      }),
+  });
+
+  // Laravel 422 field errors come back normalized as { fieldErrors: { email: [...] } }.
+  const serverEmailError = error?.fieldErrors?.email?.[0] ?? null;
+  const shownEmailError = emailError || (isError ? serverEmailError : null);
+  // Custom status copy (auth.errors.*) mapped by the hook; generic fallback only if the server said nothing.
+  const message = isError ? error?.message || t("auth.forgot.failure") : "";
+
+  
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsTimeout(false);
-    setMessage("");
-    setIsSuccess(false);
 
     const result = emailSchema.safeParse(email);
 
@@ -41,28 +54,17 @@ export default function ForgetPasswordPage() {
     }
 
     setEmailError("");
-    setStatus(true);
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsSuccess(true);
-      setMessage(t("auth.forgot.success"));
-    } catch (error) {
-      setIsTimeout(true);
-      setMessage(t("auth.forgot.failure"));
-    } finally {
-      setStatus(false);
-    }
+    mutate({ email });
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#FDFBF9] text-[#1F365C] flex flex-col justify-between p-4 md:p-6 font-sans">
+    <div className="min-h-screen overflow-hidden bg-[#FDFBF9] text-primary flex flex-col justify-between p-4 md:p-6 font-sans">
       <AuthHeader bordered={false} backLabel={t("auth.forgot.back")} />
 
       <main className="max-w-md w-full mx-auto my-auto py-2">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100/80 text-gray-600 text-xs font-medium mb-6">
-            <span className="w-2 h-2 rounded-full bg-[#D06B4F]"></span>
+            <span className="w-2 h-2 rounded-full bg-secondary"></span>
             {t("auth.forgot.badge")}
           </div>
 
@@ -72,7 +74,7 @@ export default function ForgetPasswordPage() {
             className="h-14 w-auto mb-4 object-contain"
           />
 
-          <h1 className="text-2xl md:text-3xl font-extrabold text-[#1F365C] mb-2 tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-primary mb-2 tracking-tight">
             {t("auth.forgot.title")}
           </h1>
 
@@ -86,10 +88,7 @@ export default function ForgetPasswordPage() {
             className="w-full text-left space-y-4"
           >
             <div className="space-y-1.5">
-              <Label
-                htmlFor="email"
-                className="text-xs font-bold text-[#1F365C]"
-              >
+              <Label htmlFor="email" className="text-xs font-bold text-primary">
                 {t("auth.forgot.email")}
               </Label>
 
@@ -105,32 +104,32 @@ export default function ForgetPasswordPage() {
                     setEmail(e.target.value);
                     if (emailError) setEmailError("");
                   }}
-                  className={`ps-9 h-11 border-gray-200 focus-visible:ring-[#1F365C] ${
-                    emailError
+                  className={`ps-9 h-11 border-gray-200 focus-visible:ring-primary ${
+                    shownEmailError
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }`}
                 />
               </div>
 
-              {emailError ? (
+              {shownEmailError ? (
                 <p className="text-[11px] text-red-500 mt-1 font-medium">
-                  {emailError}
+                  {shownEmailError}
                 </p>
               ) : null}
             </div>
 
             <Button
               type="submit"
-              disabled={status}
-              className="w-full h-11 bg-[#1F365C] hover:bg-[#162744] text-white font-medium flex items-center justify-center gap-2 rounded-lg cursor-pointer"
+              disabled={isPending}
+              className="w-full h-11 bg-primary hover:bg-[#162744] text-white font-medium flex items-center justify-center gap-2 rounded-lg cursor-pointer"
             >
-              {status ? (
+              {isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   {t("auth.forgot.sending")}
                 </>
-              ) : isTimeout ? (
+              ) : isError ? (
                 <>
                   {t("auth.forgot.retry")} <RotateCcw className="w-4 h-4" />
                 </>
@@ -145,13 +144,7 @@ export default function ForgetPasswordPage() {
           <SecurityNotice text={t("auth.forgot.security")} className="w-full" />
 
           {message && (
-            <div
-              className={`w-full mt-4 p-3 rounded-xl text-xs text-center font-medium border ${
-                isSuccess
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-[#FDF2F2] border-[#FAD2D2] text-[#E05252]"
-              }`}
-            >
+            <div className="w-full mt-4 p-3 rounded-xl text-xs text-center font-medium border bg-[#FDF2F2] border-[#FAD2D2] text-[#E05252]">
               {message}
             </div>
           )}

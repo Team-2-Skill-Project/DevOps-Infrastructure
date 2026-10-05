@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ const ease = [0.16, 1, 0.3, 1];
  * Layout: ActionBanner → header → CvFileCard → CvExtractionReview
  */
 export default function CvManagementPage() {
+  const { t } = useTranslation("dashboard");
   const [banner, setBanner] = useState({ status: null, text: "" });
   const [cv, setCv] = useState(MOCK_CV);
   const [skills, setSkills] = useState(MOCK_SKILLS);
@@ -109,10 +111,10 @@ export default function CvManagementPage() {
         <div className="flex items-center justify-between border-b border-border pb-4">
           <div>
             <h1 className="text-2xl font-bold text-primary">
-              CV Management & AI Extraction Review
+              {t("pages.cvManagement.title")}
             </h1>
             <p className="text-xs text-muted">
-              Upload your resume, review, and verify the AI-extracted data.
+              {t("pages.cvManagement.description")}
             </p>
           </div>
 

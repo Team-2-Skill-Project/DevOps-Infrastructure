@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { motion } from "framer-motion";
 
 const LANGUAGES = [
@@ -11,6 +11,7 @@ const LANGUAGES = [
  * setup), otherwise manages its own state so it still works standalone.
  */
 export default function LanguageToggle({ language, onChange, className = "" }) {
+  const instanceId = useId();
   const [internalLang, setInternalLang] = useState("en");
   const active = language ?? internalLang;
 
@@ -37,7 +38,7 @@ export default function LanguageToggle({ language, onChange, className = "" }) {
         >
           {active === lang.code && (
             <motion.span
-              layoutId="lang-switcher-pill"
+              layoutId={`lang-switcher-pill-${instanceId}`}
               className="absolute inset-0 rounded-full bg-primary"
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
             />

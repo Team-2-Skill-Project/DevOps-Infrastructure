@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import DashboardBreadcrumb from "./DashboardBreadcrumb";
-import { DASHBOARD_QUICK_ACTIONS } from "@/constants/dashboardQuickActions";
+import { DASHBOARD_QUICK_ACTIONS } from "@/features/candidate/shared/dashboardQuickActions";
 import { useLocalizedPath } from "@/utils/routes";
 import { useTranslation } from "react-i18next";
 

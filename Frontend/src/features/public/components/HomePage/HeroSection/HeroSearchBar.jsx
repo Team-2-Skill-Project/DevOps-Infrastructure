@@ -76,7 +76,7 @@ export default function HeroSearchBar({
       className="mb-4 w-full max-w-3xl"
     >
       <Card className="rounded-2xl border-primary-foreground/20 bg-primary-foreground/[0.08] p-0 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-primary-foreground/40 md:rounded-full">
-        <CardContent className="flex flex-col items-stretch gap-1 p-2 sm:p-2.5 md:flex-row md:gap-0">
+        <CardContent className="flex flex-col items-center gap-1 p-2 sm:p-2.5 md:flex-row md:gap-0">
           {/* Job title / keyword */}
           <Popover open={showDropdown} onOpenChange={setShowDropdown}>
             <PopoverAnchor asChild>
