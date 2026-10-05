@@ -119,7 +119,7 @@ export default function Header()
                 ))}
               </nav>
 
-              <div className="mt-6 flex flex-col gap-2 border-t border-border pt-6">
+              <div className="mt-6 flex flex-col gap-2 p-4 border-t border-border pt-6">
                 <SheetClose asChild>
                   <Button
                     asChild

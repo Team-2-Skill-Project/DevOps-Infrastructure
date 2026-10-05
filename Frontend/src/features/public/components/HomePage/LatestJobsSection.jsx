@@ -54,14 +54,14 @@ export default function LatestJobsSection() {
       <Tabs
         value={category}
         onValueChange={setCategory}
-        className="mb-10 border-b border-border pb-2"
+        className="mb-10 min-w-0 overflow-x-auto border-b border-border pb-2"
       >
-        <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
+        <TabsList className="h-auto w-max min-w-full flex-nowrap justify-start gap-2 bg-transparent p-0">
           {JOB_CATEGORIES.map((c) => (
             <TabsTrigger
               key={c.value}
               value={c.value}
-              className="rounded-full border border-border bg-surface px-4 py-1.5 font-headline-sm text-[13px] font-medium text-muted shadow-none transition-colors data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none hover:bg-background hover:text-ink"
+              className="flex-none rounded-full border border-border bg-surface px-4 py-1.5 font-headline-sm text-[13px] font-medium text-muted shadow-none transition-colors data-[state=active]:border-transparent data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none hover:bg-background hover:text-ink"
             >
               {t(`home.jobCategories.${c.value}`)}
             </TabsTrigger>
