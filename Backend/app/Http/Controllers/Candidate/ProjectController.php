@@ -13,7 +13,11 @@ class ProjectController extends Controller
 {
     public function index(ProjectRequest $request): JsonResponse
     {
-        $projects = $request->profile()->projects()->orderByDesc('start_date')->orderByDesc('id')->get();
+        $projects = $request->profile()->projects()
+            ->orderByRaw('CASE WHEN start_date IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get();
 
         return response()->json(['data' => ProjectResource::collection($projects)->resolve($request)]);
     }

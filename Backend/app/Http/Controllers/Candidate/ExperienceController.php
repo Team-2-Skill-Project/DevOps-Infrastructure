@@ -13,7 +13,11 @@ class ExperienceController extends Controller
 {
     public function index(ExperienceRequest $request): JsonResponse
     {
-        $experiences = $request->profile()->experiences()->orderByDesc('start_date')->orderByDesc('id')->get();
+        $experiences = $request->profile()->experiences()
+            ->orderByRaw('CASE WHEN start_date IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get();
 
         return response()->json(['data' => ExperienceResource::collection($experiences)->resolve($request)]);
     }

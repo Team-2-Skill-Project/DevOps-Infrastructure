@@ -90,7 +90,7 @@ it('separates required and preferred skills while preserving pivot metadata', fu
     expect($job->skills)->toHaveCount(2)
         ->and($job->requiredSkills->modelKeys())->toBe([$required->id])
         ->and($job->preferredSkills->modelKeys())->toBe([$preferred->id])
-        ->and($job->requiredSkills->first()->pivot->is_required)->toBe(1)
+        ->and($job->requiredSkills->first()->pivot->is_required)->toBeTrue()
         ->and($job->requiredSkills->first()->pivot->importance)->toBe(5)
         ->and($job->requiredSkills->first()->pivot->required_level)->toBe('advanced')
         ->and($requiredLink->jobPost->is($job))->toBeTrue();

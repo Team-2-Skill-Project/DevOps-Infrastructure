@@ -116,21 +116,22 @@ class JobPost extends Model
         return $this->hasMany(JobSkill::class);
     }
 
-    /** @return BelongsToMany<Skill, $this> */
+    /** @return BelongsToMany<Skill, $this, JobSkillPivot> */
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(Skill::class, 'job_skills')
+            ->using(JobSkillPivot::class)
             ->withPivot(['id', 'is_required', 'importance', 'required_level'])
             ->withTimestamps();
     }
 
-    /** @return BelongsToMany<Skill, $this> */
+    /** @return BelongsToMany<Skill, $this, JobSkillPivot> */
     public function requiredSkills(): BelongsToMany
     {
         return $this->skills()->wherePivot('is_required', true);
     }
 
-    /** @return BelongsToMany<Skill, $this> */
+    /** @return BelongsToMany<Skill, $this, JobSkillPivot> */
     public function preferredSkills(): BelongsToMany
     {
         return $this->skills()->wherePivot('is_required', false);

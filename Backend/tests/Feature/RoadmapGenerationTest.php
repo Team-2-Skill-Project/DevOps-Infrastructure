@@ -123,10 +123,39 @@ it('rejects nonsequential generated ordering', function () {
 it('rolls back the complete hierarchy when a child insert fails', function () {
     bindRoadmapGenerator(validRoadmapGenerationOutput());
     $profile = CandidateProfile::factory()->create();
-    DB::unprepared("CREATE TRIGGER fail_roadmap_task_insert BEFORE INSERT ON roadmap_steps BEGIN SELECT RAISE(ABORT, 'task insert failed'); END");
+    $driver = DB::connection()->getDriverName();
 
-    expect(fn () => app(RoadmapGenerationService::class)->generate($profile, 'role', 'Backend Engineer'))
-        ->toThrow(QueryException::class);
+    if ($driver === 'sqlite') {
+        DB::unprepared("CREATE TRIGGER fail_roadmap_task_insert BEFORE INSERT ON roadmap_steps BEGIN SELECT RAISE(ABORT, 'task insert failed'); END");
+    } else {
+        DB::unprepared(<<<'SQL'
+            CREATE OR REPLACE FUNCTION fail_roadmap_task_insert()
+            RETURNS TRIGGER
+            LANGUAGE plpgsql
+            AS $$
+            BEGIN
+                RAISE EXCEPTION 'task insert failed';
+            END;
+            $$;
+
+            CREATE TRIGGER fail_roadmap_task_insert
+            BEFORE INSERT ON roadmap_steps
+            FOR EACH ROW
+            EXECUTE FUNCTION fail_roadmap_task_insert();
+            SQL);
+    }
+
+    try {
+        expect(fn () => app(RoadmapGenerationService::class)->generate($profile, 'role', 'Backend Engineer'))
+            ->toThrow(QueryException::class);
+    } finally {
+        if ($driver === 'sqlite') {
+            DB::statement('DROP TRIGGER IF EXISTS fail_roadmap_task_insert');
+        } else {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_roadmap_task_insert ON roadmap_steps');
+            DB::unprepared('DROP FUNCTION IF EXISTS fail_roadmap_task_insert()');
+        }
+    }
 
     $this->assertDatabaseCount('roadmaps', 0);
     $this->assertDatabaseCount('roadmap_phases', 0);

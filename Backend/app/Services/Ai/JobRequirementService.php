@@ -14,19 +14,27 @@ class JobRequirementService extends BaseAiService
      */
     public function extractAndNormalizeRequirements(JobPost $job): void
     {
-        $payload = [
-            'job_id' => $job->id,
-            'title' => $job->title,
-            'description' => $job->description,
-            'taxonomy_reference' => Skill::pluck('name')->toArray(), // مرجع المهارات للـ Normalization
-        ];
+        $response = $this->postJson('/api/v1/jobs/analyze', [
+            'job_description' => $job->description,
+        ]);
+        $output = $response['profile'] ?? null;
 
-        $response = $this->sendRequest('jobs/extract-requirements', $payload);
-        $output = $response['output'];
+        if (! is_array($output)) {
+            $this->invalidResponse();
+        }
 
         // حفظ المتطلبات وربطها بالـ Skill Taxonomy
-        foreach ($output['skills'] ?? [] as $reqSkill) {
-            $name = trim((string) ($reqSkill['canonical_name'] ?? $reqSkill['name'] ?? ''));
+        foreach ([
+            ...array_map(
+                static fn (mixed $skill): array => is_array($skill) ? [...$skill, 'is_required' => true] : [],
+                is_array($output['required_skills'] ?? null) ? $output['required_skills'] : [],
+            ),
+            ...array_map(
+                static fn (mixed $skill): array => is_array($skill) ? [...$skill, 'is_required' => false] : [],
+                is_array($output['preferred_skills'] ?? null) ? $output['preferred_skills'] : [],
+            ),
+        ] as $reqSkill) {
+            $name = trim((string) ($reqSkill['canonical_name'] ?? ''));
 
             if ($name === '') {
                 continue;
@@ -40,16 +48,34 @@ class JobRequirementService extends BaseAiService
             JobSkill::updateOrCreate(
                 ['job_post_id' => $job->id, 'skill_id' => $skill->id],
                 [
-                    'is_required' => ($reqSkill['type'] ?? 'required') === 'required',
-                    'importance' => isset($reqSkill['importance']) ? (int) $reqSkill['importance'] : null,
-                    'required_level' => $reqSkill['required_level'] ?? $reqSkill['level'] ?? null,
+                    'is_required' => (bool) ($reqSkill['is_required'] ?? false),
+                    'importance' => match ($reqSkill['importance'] ?? null) {
+                        'critical' => 3,
+                        'important' => 2,
+                        'nice_to_have' => 1,
+                        default => null,
+                    },
+                    'required_level' => is_string($reqSkill['required_level'] ?? null)
+                        ? $reqSkill['required_level']
+                        : null,
                 ]
             );
         }
 
         $job->update([
-            'canonical_role' => $output['role_family'] ?? $output['canonical_role'] ?? null,
-            'experience_level' => $output['seniority'] ?? 'entry_level',
+            'canonical_role' => is_string($output['canonical_role'] ?? null)
+                ? $output['canonical_role']
+                : (is_string($output['role_family'] ?? null) ? $output['role_family'] : null),
+            'experience_level' => is_string($output['seniority'] ?? null) ? $output['seniority'] : 'entry_level',
+            'min_years_experience' => is_numeric($output['min_years_experience'] ?? null)
+                ? (int) $output['min_years_experience']
+                : null,
+            'max_years_experience' => is_numeric($output['max_years_experience'] ?? null)
+                ? (int) $output['max_years_experience']
+                : null,
+            'responsibilities' => is_array($output['responsibilities'] ?? null)
+                ? array_values(array_filter($output['responsibilities'], 'is_string'))
+                : [],
         ]);
     }
 }

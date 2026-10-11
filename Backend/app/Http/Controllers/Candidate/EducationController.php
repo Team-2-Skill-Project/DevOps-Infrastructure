@@ -13,7 +13,11 @@ class EducationController extends Controller
 {
     public function index(EducationRequest $request): JsonResponse
     {
-        $educations = $request->profile()->educations()->orderByDesc('start_date')->orderByDesc('id')->get();
+        $educations = $request->profile()->educations()
+            ->orderByRaw('CASE WHEN start_date IS NULL THEN 1 ELSE 0 END ASC')
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->get();
 
         return response()->json(['data' => EducationResource::collection($educations)->resolve($request)]);
     }

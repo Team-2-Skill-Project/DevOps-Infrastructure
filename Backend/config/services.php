@@ -35,9 +35,11 @@ return [
         ],
     ],
     'ai' => [
-        'url' => env('AI_SERVICE_URL', 'https://api.ai-service.local'),
-        'key' => env('AI_SERVICE_KEY', 'default-key'),
+        'url' => env('AI_SERVICE_BASE_URL') ?: env('AI_SERVICE_URL', 'https://ai-serv5.fastapicloud.dev'),
+        'key' => env('AI_SERVICE_API_KEY') ?: env('AI_SERVICE_KEY'),
         'provider' => env('AI_SERVICE_PROVIDER', 'ai'),
+        'timeout' => (int) env('AI_SERVICE_TIMEOUT', 30),
+        'connect_timeout' => (int) env('AI_SERVICE_CONNECT_TIMEOUT', 5),
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),

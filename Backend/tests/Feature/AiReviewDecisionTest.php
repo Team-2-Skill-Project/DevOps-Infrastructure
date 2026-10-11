@@ -178,14 +178,39 @@ it('prevents all decisions after a terminal review state', function (AiReviewSta
 it('rolls back canonical and review changes when canonical persistence fails', function () {
     $item = pendingCvReviewItem();
     $admin = User::factory()->create(['role' => 'admin']);
-    DB::statement("CREATE TRIGGER fail_candidate_skill BEFORE INSERT ON candidate_skills BEGIN SELECT RAISE(FAIL, 'forced failure'); END");
+    $driver = DB::connection()->getDriverName();
+
+    if ($driver === 'sqlite') {
+        DB::statement("CREATE TRIGGER fail_candidate_skill BEFORE INSERT ON candidate_skills BEGIN SELECT RAISE(FAIL, 'forced failure'); END");
+    } else {
+        DB::unprepared(<<<'SQL'
+            CREATE OR REPLACE FUNCTION fail_candidate_skill_insert()
+            RETURNS TRIGGER
+            LANGUAGE plpgsql
+            AS $$
+            BEGIN
+                RAISE EXCEPTION 'forced failure';
+            END;
+            $$;
+
+            CREATE TRIGGER fail_candidate_skill
+            BEFORE INSERT ON candidate_skills
+            FOR EACH ROW
+            EXECUTE FUNCTION fail_candidate_skill_insert();
+            SQL);
+    }
 
     try {
         $this->withToken(JWTAuth::fromUser($admin))
             ->postJson("/api/admin/ai-review-items/{$item->id}/approve")
             ->assertServerError();
     } finally {
-        DB::statement('DROP TRIGGER fail_candidate_skill');
+        if ($driver === 'sqlite') {
+            DB::statement('DROP TRIGGER IF EXISTS fail_candidate_skill');
+        } else {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_candidate_skill ON candidate_skills');
+            DB::unprepared('DROP FUNCTION IF EXISTS fail_candidate_skill_insert()');
+        }
     }
 
     expect($item->fresh()->status)->toBe(AiReviewStatus::PENDING)

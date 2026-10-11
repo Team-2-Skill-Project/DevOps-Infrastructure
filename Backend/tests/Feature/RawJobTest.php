@@ -102,8 +102,9 @@ it('rejects cross-source provenance through the service and database', function 
 
     expect(fn () => app(RawJobService::class)->store($run, new DiscoveredListing($other->id, 'https://example.com/job')))
         ->toThrow(ValidationException::class);
-    expect(fn () => RawJob::factory()->create(['ingestion_run_id' => $run->id, 'job_source_id' => $other->id]))
-        ->toThrow(QueryException::class);
+    expect(fn () => DB::transaction(function () use ($run, $other): void {
+        RawJob::factory()->create(['ingestion_run_id' => $run->id, 'job_source_id' => $other->id]);
+    }))->toThrow(QueryException::class);
 
     $this->assertDatabaseCount('raw_jobs', 0);
 });
@@ -111,8 +112,9 @@ it('rejects cross-source provenance through the service and database', function 
 it('enforces the same-run identity constraint in the database', function () {
     $raw = RawJob::factory()->create();
 
-    expect(fn () => RawJob::factory()->create(['ingestion_run_id' => $raw->ingestion_run_id, 'identity_key' => $raw->identity_key]))
-        ->toThrow(QueryException::class);
+    expect(fn () => DB::transaction(function () use ($raw): void {
+        RawJob::factory()->create(['ingestion_run_id' => $raw->ingestion_run_id, 'identity_key' => $raw->identity_key]);
+    }))->toThrow(QueryException::class);
 
     $this->assertDatabaseCount('raw_jobs', 1);
 });

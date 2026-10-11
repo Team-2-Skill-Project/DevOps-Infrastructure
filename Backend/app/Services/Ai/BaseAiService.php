@@ -2,71 +2,63 @@
 
 namespace App\Services\Ai;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+use App\Exceptions\AiServiceException;
 use Illuminate\Validation\ValidationException;
 
 class BaseAiService
 {
-    protected string $aiEndpoint;
-
-    protected string $apiKey;
-
-    public function __construct()
-    {
-        // إعدادات الاتصال بخدمة الـ AI (توضع في ملف .env)
-        $this->aiEndpoint = config('services.ai.url', 'https://api.ai-service.local/');
-        $this->apiKey = config('services.ai.key', 'default-key');
-    }
+    public function __construct(protected FastApiAiClient $aiClient) {}
 
     /**
-     * إرسال طلب موحد للـ AI مع تتبع الـ Metadata.
-     *
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    protected function sendRequest(string $endpoint, array $payload): array
+    protected function postJson(string $endpoint, array $payload): array
     {
         try {
-            $response = Http::withToken($this->apiKey)
-                ->timeout(30)
-                ->post("{$this->aiEndpoint}/{$endpoint}", [
-                    'metadata' => [
-                        'timestamp' => now()->toIso8601String(),
-                        'environment' => config('app.env'),
-                    ],
-                    'payload' => $payload,
-                ]);
-
-            if ($response->failed()) {
-                Log::error("AI Service Error [{$endpoint}]: ".$response->status());
-                throw ValidationException::withMessages([
-                    'ai' => __('ai.service_error'),
-                ]);
-            }
-
-            $result = $response->json();
-
-            if (! is_array($result)) {
-                throw ValidationException::withMessages([
-                    'ai' => __('ai.invalid_response'),
-                ]);
-            }
-
-            return [
-                'success' => $result['success'] ?? true,
-                'output' => $result['output'] ?? [],
-                'confidence' => $result['confidence'] ?? 1.0,
-                'error' => $result['error'] ?? null,
-            ];
-
-        } catch (ValidationException $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            Log::error('AI Connection Exception: '.$e->getMessage());
-            throw ValidationException::withMessages([
-                'ai' => __('ai.connection_failed'),
-            ]);
+            return $this->aiClient->postJson($endpoint, $payload);
+        } catch (AiServiceException $exception) {
+            $this->throwClientException($exception);
         }
+    }
+
+    /**
+     * @param  array<string, string>  $fields
+     * @return array<string, mixed>
+     */
+    protected function postMultipart(
+        string $endpoint,
+        string $field,
+        string $contents,
+        string $filename,
+        ?string $mimeType = null,
+        array $fields = [],
+    ): array {
+        try {
+            return $this->aiClient->postMultipart($endpoint, $field, $contents, $filename, $mimeType, $fields);
+        } catch (AiServiceException $exception) {
+            $this->throwClientException($exception);
+        }
+    }
+
+    protected function invalidResponse(): never
+    {
+        throw ValidationException::withMessages([
+            'ai' => __('ai.invalid_response'),
+        ]);
+    }
+
+    private function throwClientException(AiServiceException $exception): never
+    {
+        $messageKey = match ($exception->reason) {
+            AiServiceException::REASON_INVALID_RESPONSE => 'ai.invalid_response',
+            default => $exception->isClientError()
+                ? 'ai.service_error'
+                : 'ai.connection_failed',
+        };
+
+        throw ValidationException::withMessages([
+            'ai' => __($messageKey),
+        ]);
     }
 }
