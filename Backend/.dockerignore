@@ -1,54 +1,65 @@
-.git
-.github
+# Version Control (keep git metadata out of the image)
+.git/
+.github/
 .gitignore
 .gitattributes
 
-# Environment files and credentials
-.env
+# Secrets & Env files (CRITICAL) 
+.env 
 .env.*
+!.env.example
 *.pem
-*.key
+*.key 
 auth.json
 
-# Dependencies and build output
-node_modules
+# Local Dependencies & Package Manager Logs
 /vendor/
+/node_modules/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Laravel Runtime Caches, Sessions and Logs
+storage/logs/*
+!storage/logs/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/pail/
+
+# Frontend Dev and Build Artifacts 
 public/hot
 public/storage
-bootstrap/ssr
+bootstrap/ssr/
 
-# Runtime files
-storage/logs/*
-storage/framework/cache/*
-storage/framework/sessions/*
-storage/framework/views/*
-storage/pail/*
-!storage/logs/.gitignore
-!storage/framework/cache/.gitignore
-!storage/framework/sessions/.gitignore
-!storage/framework/views/.gitignore
+# Test & Static Analysis Caches 
+.phpunit.cache 
+.phpunit.result.cache 
+.phpstan.cache/
 
-# Tests and local caches
-tests
-.phpunit.cache
-.phpunit.result.cache
-.phpstan.cache
-.pest.cache
-
-# Local tooling and editor files
-.idea
-.vscode
-.php-cs-fixer.cache
-.DS_Store
-Thumbs.db
+# IDE, Editor, AI assistant metadata 
+.idea/
+.vscode/
+.fleet/
+.nova/
+.zed/
+.agents/
+.junie/
+.claude/
+.cursor/
+AGENTS.md
+boost.json
 Homestead.json
 Homestead.yaml
-/.fleet
-/.nova
-/.zed
-/.claude
-/.cursor
-/.windsurf
-/.codex
-/.agents
-AGENTS.md
+.editorconfig
+.phpactor.json
+
+# Docker & Repo Docs
+Dockerfile* 
+docker-compose* 
+README.md
+
+# OS Junk 
+.DB_Store 
+Thumbs.db 

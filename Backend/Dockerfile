@@ -1,52 +1,60 @@
-FROM php:8.5-apache
+FROM composer:2.7 AS vendor
 
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libzip-dev \
-    libicu-dev \
-    libonig-dev \
-    default-libmysqlclient-dev \
-    && docker-php-ext-install \
-        pdo_mysql \
-        mbstring \
-        intl \
-        zip \
-        bcmath \
-        pcntl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
 
-RUN a2enmod rewrite
-
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-RUN sed -ri \
-    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/*.conf \
-    /etc/apache2/apache2.conf \
-    /etc/apache2/conf-available/*.conf
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/html
-
-COPY composer.json composer.lock ./
+COPY composer.json composer.lock ./ 
 
 RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
+    --ignore-platform-reqs \
     --optimize-autoloader \
-    --no-scripts
+    --no-scripts 
 
-COPY . .
+FROM php:8.3-cli-alpine 
 
-RUN composer dump-autoload --optimize --no-dev \
-    && php artisan package:discover --ansi \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN apk add --no-cache \
+    bash \
+    curl \
+    git \
+    libpq-dev \
+    libzip-dev \
+    icu-dev \
+    tini \
+    linux-headers \
+    $PHPIZE_DEPS \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        pgsql \
+        bcmath \
+        pcntl \
+        intl \
+        zip \
+        opcache \
+    && apk del $PHPIZE_DEPS 
 
-EXPOSE 80
+RUN addgroup -g 10001 appgroup && \
+    adduser -u 10001 -G appgroup -s /bin/sh -D appuser 
 
-CMD ["apache2-foreground"]
+WORKDIR /var/www/html 
+
+COPY --chown=appuser:appgroup . .
+COPY --from=vendor --chown=appuser:appgroup /app/vendor ./vendor
+
+RUN mkdir -p storage/framework/cache/data \
+             storage/framework/sessions \
+             storage/framework/views \
+             storage/logs \
+             bootstrap/cache && \
+    chown -R appuser:appgroup storage bootstrap/cache && \
+    chmod -R 775 storage bootstrap/cache 
+    
+USER appuser 
+EXPOSE 8000
+
+ENTRYPOINT ["/sbin/tini", "--"] 
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
