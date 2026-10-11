@@ -1,4 +1,4 @@
-FROM composer:2.7 AS vendor
+FROM composer:2.8 AS vendor
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN composer install \
     --optimize-autoloader \
     --no-scripts 
 
-FROM php:8.3-cli-alpine 
+FROM php:8.5-cli-alpine
 
 RUN apk add --no-cache \
     bash \
@@ -28,6 +28,7 @@ RUN apk add --no-cache \
     && docker-php-ext-enable redis \
     && docker-php-ext-install \
         pdo \
+        pdo_mysql \
         pdo_pgsql \
         pgsql \
         bcmath \

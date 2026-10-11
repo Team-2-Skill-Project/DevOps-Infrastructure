@@ -1,11 +1,12 @@
 # System Runtimes
-php>=8.3.0
+php>=8.4.0
 composer>=2.8.0
 
 # PHP Extensions
 ext-pdo
 ext-pdo_mysql
 ext-pdo_pgsql
+ext-pgsql
 ext-redis
 ext-bcmath
 ext-intl
@@ -15,15 +16,38 @@ ext-xml
 ext-curl
 ext-opcache
 ext-pcntl
+ext-ctype
+ext-openssl
+ext-tokenizer
+ext-sodium
 
 # Databases & Daemons
+mysql-server>=8.0.0
 mariadb-server>=11.8.0
+postgresql-server>=17.0
 redis-server>=7.0.0
 
-# Laravel Packages
-laravel/framework:^13.17
-intertiajs/intertia-laravel:^3.0
+# Laravel Packages (Runtime Dependencies)
+dedoc/scramble:^0.13.45
+inertiajs/inertia-laravel:^3.0
+laravel/chisel:^0.1.0
 laravel/fortify:^1.37.2
+laravel/framework:^13.17
 laravel/sanctum:^4.0
-tymon/jwt-auth:^2.3
 laravel/tinker:^3.0
+laravel/wayfinder:^0.1.14
+nesbot/carbon:3.14.0
+tymon/jwt-auth:^2.3
+
+# Development Dependencies
+fakerphp/faker:^1.24
+larastan/larastan:^3.9
+laravel/boost:^2.2
+laravel/pail:^1.2.5
+laravel/pao:^1.0.6
+laravel/pint:^1.27
+laravel/sail:^1.53
+mockery/mockery:^1.6
+nunomaduro/collision:^8.9.3
+pestphp/pest:^5.1
+pestphp/pest-plugin-laravel:^5.0
