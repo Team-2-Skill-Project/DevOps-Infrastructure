@@ -31,7 +31,7 @@ class SkillTaxonomyRequest extends FormRequest
     public function skill(): Skill
     {
         if (! $this->parentSkill) {
-            throw new HttpResponseException(response()->json(['message' => 'Skill not found.'], 404));
+            throw new HttpResponseException(response()->json(['message' => __('skill.not_found')], 404));
         }
 
         return $this->parentSkill;
@@ -40,7 +40,7 @@ class SkillTaxonomyRequest extends FormRequest
     public function skillAlias(): SkillAlias
     {
         if (! $this->ownedAlias) {
-            throw new HttpResponseException(response()->json(['message' => 'Skill alias not found.'], 404));
+            throw new HttpResponseException(response()->json(['message' => __('skill.alias_not_found')], 404));
         }
 
         return $this->ownedAlias;

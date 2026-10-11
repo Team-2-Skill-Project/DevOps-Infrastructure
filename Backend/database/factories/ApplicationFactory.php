@@ -6,19 +6,17 @@ namespace Database\Factories;
 
 use App\Enums\ApplicationStatus;
 use App\Models\Application;
-use App\Models\Application as ApplicationModel;
 use App\Models\CandidateProfile;
 use App\Models\JobPost;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<ApplicationModel>
- */
+/** @extends Factory<Application> */
 class ApplicationFactory extends Factory
 {
-    /** @var class-string<Application> @extends \Illuminate\Database\Eloquent\Factories\Factory<Application> */
-    protected $model = ApplicationModel::class;
+    /** @var class-string<Application> */
+    protected $model = Application::class;
 
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [

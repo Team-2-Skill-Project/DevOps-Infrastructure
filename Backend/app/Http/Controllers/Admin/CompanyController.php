@@ -73,7 +73,9 @@ class CompanyController extends Controller
         $source = Company::query()->findOrFail($sourceCompany);
         $targetCompanyId = (int) $request->validated('target_company_id');
         $target = Company::query()->findOrFail($targetCompanyId);
-        $result = $companies->mergeCompany($source, $target);
+        /** @var User $actor */
+        $actor = $request->user('api');
+        $result = $companies->mergeCompany($source, $target, $actor);
 
         return response()->json([
             'data' => (new CompanyResource($result['company']->load('aliases')->loadCount('jobPosts')))->resolve($request),

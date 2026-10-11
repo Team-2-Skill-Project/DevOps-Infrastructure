@@ -21,7 +21,7 @@ class MentorMessageFactory extends Factory
             'mentor_chat_id' => MentorChatFactory::new(),
             'sender' => 'mentor',
             'content' => $this->faker->paragraph(),
-            'supported_actions' => json_encode([]),
+            'supported_actions' => [],
         ];
     }
 }

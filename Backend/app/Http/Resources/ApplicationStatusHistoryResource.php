@@ -6,7 +6,11 @@ use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 
 class ApplicationStatusHistoryResource extends JsonApiResource
 {
-    /** @var array<string> */
+    /**
+     * The resource's attributes.
+     *
+     * @var list<string>
+     */
     public array $attributes = [
         'old_status',
         'new_status',
@@ -14,7 +18,11 @@ class ApplicationStatusHistoryResource extends JsonApiResource
         'created_at',
     ];
 
-    /** @var array<string> */
+    /**
+     * The resource's relationships.
+     *
+     * @var list<string>
+     */
     public array $relationships = [
         'application',
         'changer',

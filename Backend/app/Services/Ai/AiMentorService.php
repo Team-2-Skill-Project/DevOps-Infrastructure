@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\Ai;
 
-use App\Models\CandidateProfile;
 use App\Models\MentorChat;
 use App\Models\MentorMessage;
 use App\Models\User;
@@ -22,24 +21,29 @@ class AiMentorService extends BaseAiService
     {
         $profile = $user->candidateProfile;
 
-        // Prevent phpstan undefined property warnings when CandidateProfile phpdoc may be missing
-        /** @var CandidateProfile|null $profile */
-
-        // Fallback لو بيانات الـ Profile أو الـ CV ناقصة تماماً
-        if (! $profile || ! $profile->target_role) {
+        if ($profile === null) {
             throw ValidationException::withMessages([
-                'context' => __('ai.missing_profile_context') ?: 'عذراً، يجيب إكمال الملف المهني وتحديد الوظيفة المستهدفة أولاً لكي يستطيع المرشد مساعدتك بدقة.',
+                'context' => __('ai.missing_profile_context'),
             ]);
         }
 
-        // بناء الـ Context الشامل للمرشد الذكي
+        $targetRole = data_get($profile->careerPreference, 'target_role') ?? $profile->job_title;
+
+        if (! $targetRole) {
+            throw ValidationException::withMessages([
+                'context' => __('ai.missing_profile_context'),
+            ]);
+        }
+
+        $latestMatch = $profile->jobMatches()->latest('calculated_at')->firstOrNew([]);
+
         $context = [
             'verified_profile' => $profile->toArray(),
-            'target_role' => $profile->target_role,
-            'saved_jobs' => $user->savedJobs()->with('job')->get()->toArray(),
+            'target_role' => $targetRole,
+            'saved_jobs' => $user->savedJobs()->with('jobPost')->get()->toArray(),
             'applied_jobs' => $user->jobApplications()->with('job')->get()->toArray(),
-            'skill_gaps' => $profile->skillGaps ?? [],
-            'roadmap' => $user->roadmaps()->with('steps')->first()?->toArray() ?? [],
+            'skill_gaps' => $latestMatch->missing_skills ?? [],
+            'roadmap' => $profile->roadmaps()->with('steps')->first()?->toArray() ?? [],
         ];
 
         $payload = [
@@ -48,29 +52,31 @@ class AiMentorService extends BaseAiService
             'question' => $question,
         ];
 
-        // استدعاء خدمة الـ AI Mentor
         $response = $this->sendRequest('mentor/chat', $payload);
-        $output = $response['output'];
+        $output = $response['output'] ?? [];
 
-        // تخزين المحادثة والرسائل (Mentor Conversation Storage)
+        if (! is_array($output) || ! isset($output['answer']) || ! is_string($output['answer'])) {
+            throw ValidationException::withMessages([
+                'ai' => __('ai.invalid_response'),
+            ]);
+        }
+
         $chat = MentorChat::firstOrCreate(
             ['user_id' => $user->id, 'job_id' => $jobId],
             ['title' => mb_substr($question, 0, 50)]
         );
 
-        // حفظ رسالة المستخدم
         MentorMessage::create([
             'mentor_chat_id' => $chat->id,
             'sender' => 'user',
             'content' => $question,
         ]);
 
-        // حفظ رد المرشد الذكي مع الروابط والأفعال المدعومة
-        $mentorMessage = MentorMessage::create([
+        MentorMessage::create([
             'mentor_chat_id' => $chat->id,
             'sender' => 'mentor',
             'content' => $output['answer'],
-            'supported_actions' => json_encode($output['actions'] ?? []),
+            'supported_actions' => $output['actions'] ?? [],
         ]);
 
         return [

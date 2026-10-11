@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CvExtractionStatus;
 use App\Models\CandidateProfile;
 use App\Models\CandidateSkill;
 use App\Models\CareerPreference;
@@ -65,7 +66,7 @@ test('the candidate profile API returns the complete related profile without N p
         ->has(CvDocument::factory()->count($count)
             ->sequence(fn (Sequence $sequence): array => ['version' => $sequence->index + 1])
             ->has(CvExtraction::factory()->state([
-                'status' => 'completed', 'confidence_score' => '0.9500',
+                'status' => CvExtractionStatus::SUCCESS, 'confidence_score' => '0.9500',
                 'raw_text' => 'Private parser input', 'extracted_data' => ['internal' => 'private'],
                 'provider' => 'internal-provider', 'error_message' => 'Private diagnostic',
             ]), 'extractions'), 'cvDocuments')

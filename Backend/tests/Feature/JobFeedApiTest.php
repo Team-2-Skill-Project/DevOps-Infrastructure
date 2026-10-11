@@ -87,7 +87,10 @@ it('searches title canonical role company name and aliases without duplicate job
     $job = JobPost::factory()->for($company)->create([
         'title' => 'Backend Engineer', 'canonical_role' => 'Platform Engineer', 'description' => 'Build APIs.',
     ]);
-    JobPost::factory()->create(['title' => 'Unrelated Position']);
+    $unrelatedCompany = Company::factory()->create(['name' => 'Distinct Employer']);
+    JobPost::factory()->for($unrelatedCompany)->create([
+        'title' => 'Unrelated Position', 'canonical_role' => 'Operations Coordinator', 'description' => 'Maintain office operations.',
+    ]);
 
     $this->withToken(JWTAuth::fromUser($user))->getJson('/api/jobs?search='.urlencode($search))
         ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $job->id)

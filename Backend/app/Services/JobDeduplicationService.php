@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\Company;
 use App\Models\CompanyAlias;
 use App\Models\JobPost;
@@ -30,6 +33,7 @@ class JobDeduplicationService
     public function __construct(
         private JobFingerprintService $fingerprints,
         private RawJobDataSanitizer $sanitizer,
+        private AuditService $audit,
     ) {}
 
     public function evaluate(RawJob $rawJob): DuplicateDecision
@@ -109,6 +113,11 @@ class JobDeduplicationService
                 return $record;
             }
 
+            $context = [
+                'job_source_id' => $record->job_source_id,
+                'ingestion_run_id' => $record->ingestion_run_id,
+            ];
+
             try {
                 $decision = $this->evaluate($record);
             } catch (ValidationException $exception) {
@@ -120,6 +129,17 @@ class JobDeduplicationService
                     'deduplication_evidence' => ['error' => 'deduplication_failed'],
                     'deduplicated_at' => now(),
                 ]);
+
+                $this->audit->record(
+                    AuditAction::JOB_DEDUPLICATED,
+                    AuditEntityType::RAW_JOB,
+                    (int) $record->getKey(),
+                    AuditSource::INGESTION,
+                    $this->audit->currentActor(),
+                    ['deduplication_status' => RawJob::DEDUPLICATION_PENDING],
+                    ['deduplication_status' => RawJob::DEDUPLICATION_FAILED, 'canonical_job_post_id' => null],
+                    [...$context, 'error' => 'deduplication_failed'],
+                );
 
                 return $record;
             }
@@ -133,6 +153,17 @@ class JobDeduplicationService
                 'deduplication_evidence' => $decision->evidence,
                 'deduplicated_at' => now(),
             ]);
+
+            $this->audit->record(
+                AuditAction::JOB_DEDUPLICATED,
+                AuditEntityType::RAW_JOB,
+                (int) $record->getKey(),
+                AuditSource::INGESTION,
+                $this->audit->currentActor(),
+                ['deduplication_status' => RawJob::DEDUPLICATION_PENDING],
+                ['deduplication_status' => $decision->decision, 'canonical_job_post_id' => $decision->canonicalJobPostId],
+                [...$context, 'method' => $decision->method, 'fingerprint_version' => $decision->fingerprintVersion],
+            );
 
             if ($decision->isMatched() && $decision->canonicalJobPostId !== null) {
                 $this->attachReference($record->refresh(), $decision);

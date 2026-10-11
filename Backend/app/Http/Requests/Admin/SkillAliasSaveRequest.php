@@ -19,4 +19,10 @@ class SkillAliasSaveRequest extends SkillTaxonomyRequest
     {
         return ['alias' => $this->isMethod('POST') ? ['required', 'string', 'max:255'] : ['sometimes', 'required', 'string', 'max:255']];
     }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('skill.attributes');
+    }
 }

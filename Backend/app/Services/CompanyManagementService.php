@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\Company;
 use App\Models\CompanyAlias;
 use App\Models\JobPost;
@@ -13,6 +16,16 @@ use Illuminate\Validation\ValidationException;
 
 class CompanyManagementService
 {
+    public function __construct(private AuditService $audit) {}
+
+    /**
+     * @var list<string>
+     */
+    private const SNAPSHOT_FIELDS = [
+        'name', 'website_url', 'linkedin_url', 'logo_url', 'industry',
+        'country', 'state', 'city', 'description', 'is_verified', 'is_active',
+    ];
+
     public function normalize(string $name): string
     {
         return Str::lower(Str::trim($name));
@@ -26,6 +39,9 @@ class CompanyManagementService
                 $record = $company
                     ? Company::query()->lockForUpdate()->findOrFail($company->id)
                     : new Company;
+
+                $isNew = ! $record->exists;
+                $before = $isNew ? null : $record->only(self::SNAPSHOT_FIELDS);
 
                 if (array_key_exists('name', $data)) {
                     $data['name'] = Str::trim($data['name']);
@@ -41,19 +57,30 @@ class CompanyManagementService
                 }
 
                 $record->save();
+                $record->refresh();
+
+                $this->audit->record(
+                    $isNew ? AuditAction::COMPANY_CREATED : AuditAction::COMPANY_UPDATED,
+                    AuditEntityType::COMPANY,
+                    (int) $record->getKey(),
+                    AuditSource::ADMIN,
+                    $actor,
+                    $before,
+                    $record->only(self::SNAPSHOT_FIELDS),
+                );
 
                 return $record;
             }, 3);
         } catch (UniqueConstraintViolationException) {
-            throw ValidationException::withMessages(['name' => 'This company name is already in use.']);
+            throw ValidationException::withMessages(['name' => __('company.validation.name_taken')]);
         }
     }
 
     /** @return array{company: Company, meta: array<string, int>} */
-    public function mergeCompany(Company $source, Company $target): array
+    public function mergeCompany(Company $source, Company $target, ?User $actor = null): array
     {
         try {
-            return DB::transaction(function () use ($source, $target): array {
+            return DB::transaction(function () use ($source, $target, $actor): array {
                 $companies = Company::query()
                     ->whereIn('id', [$source->id, $target->id])
                     ->orderBy('id')
@@ -64,7 +91,7 @@ class CompanyManagementService
                 $target = $companies->get($target->id);
 
                 if (! $source || ! $target) {
-                    throw ValidationException::withMessages(['target_company_id' => 'The source or target company no longer exists.']);
+                    throw ValidationException::withMessages(['target_company_id' => __('company.validation.merge_subject_missing')]);
                 }
 
                 $sourceAliases = CompanyAlias::query()
@@ -129,20 +156,33 @@ class CompanyManagementService
                 $target->save();
                 $source->delete();
 
+                $meta = [
+                    'merged_company_id' => $source->id,
+                    'target_company_id' => $target->id,
+                    'job_posts_moved' => $jobs->count(),
+                    'aliases_moved' => $aliasesMoved,
+                    'aliases_collapsed' => $aliasesCollapsed,
+                    'source_name_aliases_created' => $sourceNameAliasCreated,
+                ];
+
+                $this->audit->record(
+                    AuditAction::COMPANY_MERGED,
+                    AuditEntityType::COMPANY,
+                    (int) $target->id,
+                    AuditSource::ADMIN,
+                    $actor ?? $this->audit->currentActor(),
+                    ['source_company' => ['id' => $source->id, 'name' => $source->name]],
+                    ['target_company' => ['id' => $target->id, 'name' => $target->name]],
+                    $meta,
+                );
+
                 return [
                     'company' => $target,
-                    'meta' => [
-                        'merged_company_id' => $source->id,
-                        'target_company_id' => $target->id,
-                        'job_posts_moved' => $jobs->count(),
-                        'aliases_moved' => $aliasesMoved,
-                        'aliases_collapsed' => $aliasesCollapsed,
-                        'source_name_aliases_created' => $sourceNameAliasCreated,
-                    ],
+                    'meta' => $meta,
                 ];
             }, 3);
         } catch (UniqueConstraintViolationException) {
-            throw ValidationException::withMessages(['target_company_id' => 'The company merge encountered a conflicting company or alias.']);
+            throw ValidationException::withMessages(['target_company_id' => __('company.validation.merge_conflict')]);
         }
     }
 
@@ -160,7 +200,7 @@ class CompanyManagementService
             ->first();
 
         if ($canonical || $alias) {
-            throw ValidationException::withMessages(['name' => 'This company name is already used by a company or alias.']);
+            throw ValidationException::withMessages(['name' => __('company.validation.name_unavailable')]);
         }
     }
 
@@ -178,7 +218,7 @@ class CompanyManagementService
             ->first();
 
         if ($canonical || ($alias && $alias->company_id !== $targetCompanyId)) {
-            throw ValidationException::withMessages(['target_company_id' => 'A company name or alias conflicts with another company.']);
+            throw ValidationException::withMessages(['target_company_id' => __('company.validation.merge_alias_conflict')]);
         }
     }
 }

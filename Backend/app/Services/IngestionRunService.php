@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\IngestionRun;
 use App\Models\JobSource;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class IngestionRunService
 {
+    public function __construct(private AuditService $audit) {}
+
     public function startRun(JobSource $source, string $triggerType = 'manual'): IngestionRun
     {
         Validator::make(['trigger_type' => $triggerType], ['trigger_type' => ['required', Rule::in(IngestionRun::TRIGGER_TYPES)]])->validate();
@@ -21,7 +26,20 @@ class IngestionRunService
                 throw ValidationException::withMessages(['job_source_id' => __('ingestion_runs.inactive_source')]);
             }
 
-            return $source->runs()->create(['trigger_type' => $triggerType, 'status' => IngestionRun::STATUS_RUNNING, 'started_at' => now()])->refresh();
+            $run = $source->runs()->create(['trigger_type' => $triggerType, 'status' => IngestionRun::STATUS_RUNNING, 'started_at' => now()])->refresh();
+
+            $this->audit->record(
+                AuditAction::INGESTION_RUN_STARTED,
+                AuditEntityType::INGESTION_RUN,
+                (int) $run->getKey(),
+                AuditSource::INGESTION,
+                $this->audit->currentActor(),
+                null,
+                ['status' => IngestionRun::STATUS_RUNNING],
+                ['job_source_id' => $source->id, 'trigger_type' => $triggerType],
+            );
+
+            return $run;
         });
     }
 
@@ -77,6 +95,25 @@ class IngestionRunService
                 'error_context' => $errorContext ?: null,
             ]);
             $record->save();
+
+            $metadata = ['job_source_id' => $record->job_source_id, 'trigger_type' => $record->trigger_type];
+            foreach (IngestionRun::COUNTERS as $counter) {
+                $metadata[$counter] = (int) $record->getAttribute($counter);
+            }
+            if ($errorCode !== null) {
+                $metadata['error_code'] = $errorCode;
+            }
+
+            $this->audit->record(
+                AuditAction::INGESTION_RUN_FINISHED,
+                AuditEntityType::INGESTION_RUN,
+                (int) $record->getKey(),
+                AuditSource::INGESTION,
+                $this->audit->currentActor(),
+                ['status' => IngestionRun::STATUS_RUNNING],
+                ['status' => $status],
+                $metadata,
+            );
 
             return $record;
         });

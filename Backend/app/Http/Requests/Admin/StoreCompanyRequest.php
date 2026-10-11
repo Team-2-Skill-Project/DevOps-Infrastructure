@@ -36,4 +36,10 @@ class StoreCompanyRequest extends FormRequest
             'is_active' => ['sometimes', 'boolean'],
         ];
     }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('company.attributes');
+    }
 }

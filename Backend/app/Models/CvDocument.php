@@ -9,11 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $user_id
- * @property string $file_path
- * @property string|null $raw_extracted_text
- */
 class CvDocument extends Model
 {
     /** @use HasFactory<CvDocumentFactory> */
@@ -34,17 +29,7 @@ class CvDocument extends Model
         'failure_reason',
     ];
 
-    /**
-     * @property int $id
-     * @property int $candidate_profile_id
-     * @property int $user_id
-     * @property string $storage_path
-     * @property string|null $raw_extracted_text
-     */
-
-    /**
-     * @return array{file_size: 'integer', version: 'integer', is_current: 'boolean', processed_at: 'datetime'}
-     */
+    /** @return array<string, string> */
     protected function casts(): array
     {
         return [
@@ -53,8 +38,6 @@ class CvDocument extends Model
             'is_current' => 'boolean',
             'processed_at' => 'datetime',
             'status' => CvParsingStatus::class,
-            'raw_extracted_text' => 'string',
-            'user_id' => 'integer',
         ];
     }
 

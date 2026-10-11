@@ -26,7 +26,8 @@ class EmailOtpService
             }
 
             EmailOtp::where('user_id', $user->id)->where('purpose', $purpose)->delete();
-            $code = (string) random_int(100000, 999999);
+            $staticCode = $this->staticCode();
+            $code = $staticCode ?? (string) random_int(100000, 999999);
             $expiresAt = now()->addMinutes(10);
             EmailOtp::create([
                 'user_id' => $user->id,
@@ -38,7 +39,22 @@ class EmailOtpService
                 'last_sent_at' => now(),
             ]);
 
-            Mail::to($user->email)->send(new EmailOtpMail($code, $purpose, $expiresAt));
+            if ($staticCode === null) {
+                Mail::to($user->email)->send(new EmailOtpMail($code, $purpose, $expiresAt));
+            }
         });
+    }
+
+    private function staticCode(): ?string
+    {
+        if (app()->environment('production')
+            || config('app.env') === 'production'
+            || ! (bool) config('otp.static_enabled', false)) {
+            return null;
+        }
+
+        $code = config('otp.static_code');
+
+        return is_string($code) && preg_match('/\A[0-9]{6}\z/', $code) === 1 ? $code : null;
     }
 }

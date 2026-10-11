@@ -8,7 +8,6 @@ use App\Http\Requests\Cv\VerifyCvExtractionRequest;
 use App\Http\Resources\CvDocumentResource;
 use App\Models\CvDocument;
 use App\Models\CvExtraction;
-use App\Services\Ai\CvExtractionService;
 use App\Services\CvService;
 use App\Traits\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -20,38 +19,26 @@ class CvController extends Controller
 {
     use ApiResponse, AuthorizesRequests;
 
-    public function __construct(
-        protected CvService $cvService,
-        protected CvExtractionService $cvExtractionService
-    ) {}
+    public function __construct(protected CvService $cvService) {}
 
     /**
-     * Upload a new CV document, link it to candidate profile, and start AI extraction.
+     * Upload a new CV document for the authenticated user, replacing any existing CV.
      */
     public function store(UploadCvRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $profile = $request->user()->candidateProfile;
 
-        $profile = $user->candidateProfile()->firstOrCreate(
-            ['user_id' => $user->id],
-            ['full_name' => $user->name ?? 'Candidate']
-        );
-
-        $cvDocument = $this->cvService->uploadOrReplaceCv($profile, $request->file('cv'));
-
-        try {
-            $this->cvExtractionService->extractAndPersist($cvDocument);
-        } catch (\Exception $e) {
-
-            $cvDocument->update(['parsing_status' => 'failed']);
+        if (! $profile) {
+            return $this->errorResponse('cv.candidate_profile_not_found', 404);
         }
 
+        $cvDocument = $this->cvService->uploadOrReplaceCv($profile, $request->file('cv'));
         $cvDocument->load('extractions');
 
         return (new CvDocumentResource($cvDocument))
             ->additional([
                 'status' => 'success',
-                'message' => __('cv.uploaded_success') ?: 'تم رفع وتحليل السيرة الذاتية بالذكاء الاصطناعي بنجاح.',
+                'message' => __('cv.uploaded'),
             ])
             ->response()
             ->setStatusCode(201);
@@ -71,17 +58,16 @@ class CvController extends Controller
     /**
      * Display a listing of the CV documents for the authenticated user, ordered by version.
      */
-    public function history(Request $request): AnonymousResourceCollection|JsonResponse
+    public function history(Request $request): AnonymousResourceCollection
     {
         $profile = $request->user()->candidateProfile;
 
-        if (! $profile) {
-            return $this->errorResponse('cv.profile_not_found', 404);
-        }
-
-        $history = CvDocument::where('candidate_profile_id', $profile->id)
-            ->orderBy('version', 'desc')
-            ->get();
+        $history = $profile === null
+            ? collect()
+            : CvDocument::query()
+                ->where('candidate_profile_id', $profile->id)
+                ->orderByDesc('version')
+                ->get();
 
         return CvDocumentResource::collection($history);
     }
@@ -94,19 +80,12 @@ class CvController extends Controller
         $this->authorize('update', $cvDocument);
 
         $updatedCv = $this->cvService->retryProcessing($cvDocument);
-
-        try {
-            $this->cvExtractionService->extractAndPersist($updatedCv);
-        } catch (\Exception $e) {
-            $updatedCv->update(['parsing_status' => 'failed']);
-        }
-
         $updatedCv->load('extractions');
 
         return (new CvDocumentResource($updatedCv))
             ->additional([
                 'status' => 'success',
-                'message' => __('cv.retried_success') ?: 'تم إعادة محاولة التحليل بنجاح.',
+                'message' => __('cv.processing_retried'),
             ]);
     }
 
@@ -117,12 +96,8 @@ class CvController extends Controller
     {
         $profile = $request->user()->candidateProfile;
 
-        if (! $profile) {
-            return $this->errorResponse('cv.profile_not_found', 404);
-        }
-
         $this->cvService->verifyAndSyncExtractedData($profile, $extraction, $request->validated());
 
-        return $this->successResponse(null, 'cv.verified_success');
+        return $this->successResponse(null, 'cv.extraction_verified');
     }
 }

@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\AiReviewDecisionController;
+use App\Http\Controllers\Admin\AiReviewItemController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\IngestionRunController;
 use App\Http\Controllers\Admin\JobPostController;
@@ -8,6 +11,9 @@ use App\Http\Controllers\Admin\RawJobController;
 use App\Http\Controllers\Admin\SkillAliasController;
 use App\Http\Controllers\Admin\SkillController;
 use App\Http\Controllers\Admin\SkillMergeController;
+use App\Http\Controllers\Ai\AiMentorController;
+use App\Http\Controllers\Ai\CvController as AiCvController;
+use App\Http\Controllers\Ai\JobMatchController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\EmailPasswordResetController;
 use App\Http\Controllers\Candidate\CandidateSkillController;
@@ -18,11 +24,15 @@ use App\Http\Controllers\Candidate\ProfileController;
 use App\Http\Controllers\Candidate\ProjectController;
 use App\Http\Controllers\JobFeedController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\RoadmapController;
+use App\Http\Controllers\RoadmapRefreshController;
+use App\Http\Controllers\RoadmapTaskController;
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\SkillSearchController;
 use App\Http\Middleware\EnsureActiveAdmin;
 use App\Http\Middleware\EnsureActiveCandidate;
 use App\Http\Middleware\EnsureActiveUser;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -86,9 +96,19 @@ Route::middleware(['auth:api', EnsureActiveCandidate::class])->group(function ()
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
+    Route::post('/roadmaps', [RoadmapController::class, 'store'])->middleware('throttle:5,1');
+    Route::get('/roadmaps/{roadmap}', [RoadmapController::class, 'show']);
+    Route::post('/roadmaps/{roadmap}/refresh', RoadmapRefreshController::class)->middleware('throttle:5,1');
+    Route::patch('/roadmap-tasks/{roadmapTask}/complete', [RoadmapTaskController::class, 'complete']);
 });
 
 Route::middleware(['auth:api', EnsureActiveAdmin::class])->group(function (): void {
+    Route::get('/admin/audit-logs', [AuditLogController::class, 'index']);
+    Route::get('/admin/ai-review-items', [AiReviewItemController::class, 'index']);
+    Route::get('/admin/ai-review-items/{aiReviewItem}', [AiReviewItemController::class, 'show']);
+    Route::post('/admin/ai-review-items/{aiReviewItem}/approve', [AiReviewDecisionController::class, 'approve']);
+    Route::post('/admin/ai-review-items/{aiReviewItem}/correct', [AiReviewDecisionController::class, 'correct']);
+    Route::post('/admin/ai-review-items/{aiReviewItem}/reject', [AiReviewDecisionController::class, 'reject']);
     Route::post('/admin/job-sources', [JobSourceController::class, 'store']);
     Route::get('/admin/job-sources', [JobSourceController::class, 'index']);
     Route::get('/admin/job-sources/{jobSource}/raw-jobs', [RawJobController::class, 'index']);
@@ -116,4 +136,9 @@ Route::post('/admin/skills/{sourceSkill}/merge', SkillMergeController::class)->m
 
 require __DIR__.'/cv.php';
 require __DIR__.'/applications.php';
-require __DIR__.'/ai.php';
+
+Route::middleware(['auth:api', SetLocale::class, EnsureActiveCandidate::class])->prefix('ai')->group(function (): void {
+    Route::post('/cv/upload', [AiCvController::class, 'uploadAndExtract']);
+    Route::get('/jobs/{job}/match-report', [JobMatchController::class, 'getMatchReport']);
+    Route::post('/mentor/ask', [AiMentorController::class, 'ask']);
+});

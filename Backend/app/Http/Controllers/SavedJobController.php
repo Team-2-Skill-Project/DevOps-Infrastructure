@@ -37,6 +37,7 @@ class SavedJobController extends Controller
         }
 
         return response()->json([
+            'message' => __('saved_job.saved'),
             'data' => ['job_id' => $job->id, 'is_saved' => true],
         ], $savedJob->wasRecentlyCreated ? 201 : 200);
     }
@@ -53,7 +54,10 @@ class SavedJobController extends Controller
 
         SavedJob::query()->where('user_id', $user->id)->where('job_post_id', $job->id)->delete();
 
-        return response()->json(['data' => ['job_id' => $job->id, 'is_saved' => false]]);
+        return response()->json([
+            'message' => __('saved_job.unsaved'),
+            'data' => ['job_id' => $job->id, 'is_saved' => false],
+        ]);
     }
 
     public function index(SavedJobListRequest $request): AnonymousResourceCollection

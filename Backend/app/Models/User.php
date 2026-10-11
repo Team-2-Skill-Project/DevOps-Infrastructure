@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -68,6 +69,18 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
         return $this->hasMany(Notification::class);
     }
 
+    /** @return HasMany<AiReviewItem, $this> */
+    public function aiReviewItems(): HasMany
+    {
+        return $this->hasMany(AiReviewItem::class, 'reviewer_id');
+    }
+
+    /** @return HasMany<AiReviewAudit, $this> */
+    public function aiReviewAudits(): HasMany
+    {
+        return $this->hasMany(AiReviewAudit::class, 'reviewer_id');
+    }
+
     public function sendEmailVerificationNotification(): void
     {
         app(EmailOtpService::class)->send($this, EmailOtp::EMAIL_VERIFICATION);
@@ -87,18 +100,30 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail, Passk
         return $this->getKey();
     }
 
-    /** @return HasMany<Application, $this> */
-    public function jobApplications(): HasMany
+    /** @return HasManyThrough<Application, CandidateProfile, $this> */
+    public function jobApplications(): HasManyThrough
     {
-        return $this->hasMany(Application::class, 'user_id');
+        return $this->hasManyThrough(
+            Application::class,
+            CandidateProfile::class,
+            'user_id',
+            'candidate_profile_id',
+            'id',
+            'id',
+        );
     }
 
-    /**
-     * @return HasMany<Roadmap, $this>
-     */
-    public function roadmaps(): HasMany
+    /** @return HasManyThrough<Roadmap, CandidateProfile, $this> */
+    public function roadmaps(): HasManyThrough
     {
-        return $this->hasMany(Roadmap::class);
+        return $this->hasManyThrough(
+            Roadmap::class,
+            CandidateProfile::class,
+            'user_id',
+            'candidate_profile_id',
+            'id',
+            'id',
+        );
     }
 
     /** @return array<string, mixed> */

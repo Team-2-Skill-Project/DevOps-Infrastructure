@@ -11,10 +11,10 @@ class CvDocumentSeeder extends Seeder
 {
     public function run(): void
     {
-        $candidates = CandidateProfile::all();
+        $candidates = CandidateProfile::query()->orderBy('id')->get();
 
         if ($candidates->isEmpty()) {
-            $candidates = CandidateProfile::factory(3)->create();
+            $candidates = CandidateProfile::factory()->count(3)->create();
         }
 
         foreach ($candidates as $candidate) {

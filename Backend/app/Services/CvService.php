@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class CvService
 {
+    public function __construct(private SkillTaxonomyService $skills) {}
+
     public function uploadOrReplaceCv(CandidateProfile $profile, UploadedFile $file): CvDocument
     {
         return DB::transaction(function () use ($profile, $file) {
@@ -71,14 +73,17 @@ class CvService
         DB::transaction(function () use ($profile, $extraction, $verifiedData) {
             if (! empty($verifiedData['skills'])) {
                 foreach ($verifiedData['skills'] as $skillData) {
-                    $skill = Skill::firstOrCreate(['name' => $skillData['name']], ['category' => $skillData['category'] ?? 'General']);
+                    $skill = $this->skills->resolve($skillData['name'])
+                        ?? Skill::firstOrCreate(
+                            ['normalized_name' => $this->skills->normalize($skillData['name'])],
+                            ['name' => trim($skillData['name']), 'category' => $skillData['category'] ?? 'General'],
+                        );
 
                     $profile->skills()->syncWithoutDetaching([
                         $skill->id => [
                             'proficiency_level' => $skillData['proficiency_level'] ?? null,
-                            'confidence_score' => $skillData['confidence_score'] ?? null,
+                            'confidence' => $skillData['confidence_score'] ?? null,
                             'source' => ExtractionSource::CV_EXTRACTED->value,
-                            'is_verified' => true,
                         ],
                     ]);
                 }
@@ -88,7 +93,7 @@ class CvService
                 foreach ($verifiedData['experiences'] as $exp) {
                     $profile->experiences()->create([
                         'company_name' => $exp['company_name'],
-                        'title' => $exp['title'],
+                        'job_title' => $exp['title'],
                         'start_date' => $exp['start_date'],
                         'end_date' => $exp['end_date'] ?? null,
                         'description' => $exp['description'] ?? null,

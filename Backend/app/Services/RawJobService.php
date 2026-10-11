@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\IngestionRun;
 use App\Models\RawJob;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class RawJobService
 {
-    public function __construct(private RawJobDataSanitizer $sanitizer) {}
+    public function __construct(private RawJobDataSanitizer $sanitizer, private AuditService $audit) {}
 
     /** @param array<array-key, mixed>|null $rawPayload */
     public function store(IngestionRun $run, DiscoveredListing $listing, ?array $rawPayload = null, ?string $rawText = null): RawJob
@@ -76,6 +79,23 @@ class RawJobService
                 throw ValidationException::withMessages(['extraction_status' => __('raw_jobs.already_finalized')]);
             }
             $record->update($data);
+
+            if (($data['extraction_status'] ?? null) === RawJob::STATUS_FAILED) {
+                $this->audit->record(
+                    AuditAction::RAW_JOB_EXTRACTION_FAILED,
+                    AuditEntityType::RAW_JOB,
+                    (int) $record->getKey(),
+                    AuditSource::INGESTION,
+                    $this->audit->currentActor(),
+                    ['extraction_status' => RawJob::STATUS_PENDING],
+                    ['extraction_status' => RawJob::STATUS_FAILED],
+                    [
+                        'job_source_id' => $record->job_source_id,
+                        'ingestion_run_id' => $record->ingestion_run_id,
+                        'error_code' => $data['extraction_error_code'] ?? null,
+                    ],
+                );
+            }
 
             return $record;
         });

@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('mentor_chats', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('job_id')->nullable()->constrained('job_posts')->nullOnDelete();
+            $table->string('title')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'job_id']);
         });
     }
 

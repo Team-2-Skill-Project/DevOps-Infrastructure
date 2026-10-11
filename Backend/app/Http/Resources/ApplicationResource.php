@@ -8,6 +8,8 @@ class ApplicationResource extends JsonApiResource
 {
     /**
      * The resource's attributes.
+     *
+     * @var list<string>
      */
     /** @var array<string> */
     public array $attributes = [
@@ -20,6 +22,8 @@ class ApplicationResource extends JsonApiResource
 
     /**
      * The resource's relationships.
+     *
+     * @var list<string>
      */
     /** @var array<string> */
     public array $relationships = [

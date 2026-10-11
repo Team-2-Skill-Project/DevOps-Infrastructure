@@ -11,7 +11,6 @@ use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
 
 class JobApplicationController extends Controller
 {
@@ -30,10 +29,11 @@ class JobApplicationController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $user = $request->user();
+        $candidateProfileId = $user->candidateProfile?->id;
         $query = Application::query()->with(['job.company', 'candidateProfile.user', 'histories']);
 
-        if ($user->role === 'candidate' || $user->candidateProfile) {
-            $query->where('candidate_profile_id', $user->candidateProfile->id);
+        if (($user->role === 'candidate' || $candidateProfileId !== null) && $candidateProfileId !== null) {
+            $query->where('candidate_profile_id', $candidateProfileId);
         }
 
         if ($request->has('status')) {
@@ -55,7 +55,7 @@ class JobApplicationController extends Controller
     /**
      * Store a new job application and log the initial status in the history table.
      */
-    public function store(StoreJobApplicationRequest $request): Response|JsonResponse
+    public function store(StoreJobApplicationRequest $request): JsonResponse
     {
         $candidateProfileId = $request->user()->candidateProfile->id;
 
@@ -75,8 +75,14 @@ class JobApplicationController extends Controller
     /**
      * Show the details of a specific job application.
      */
-    public function show(Application $application): ApplicationResource
+    public function show(Request $request, Application $application): ApplicationResource|JsonResponse
     {
+        $user = $request->user();
+
+        if ($user->role === 'candidate' && $application->candidate_profile_id !== $user->candidateProfile?->id) {
+            return $this->errorResponse('application.unauthorized', 403);
+        }
+
         $application->load(['job.company', 'histories.changer', 'candidateProfile.user']);
 
         return new ApplicationResource($application);
@@ -90,7 +96,7 @@ class JobApplicationController extends Controller
         $user = $request->user();
 
         if ($user->role === 'candidate' && $application->candidate_profile_id !== $user->candidateProfile?->id) {
-            return $this->errorResponse(__('application.unauthorized'), 403);
+            return $this->errorResponse('application.unauthorized', 403);
         }
 
         $request->validate([
@@ -118,14 +124,17 @@ class JobApplicationController extends Controller
      */
     public function withdraw(Application $application): ApplicationResource|JsonResponse
     {
-        if ($application->candidate_profile_id !== auth()->user()->candidateProfile->id) {
-            return $this->errorResponse(__('application.unauthorized_action'), 403);
+        $user = auth()->user();
+        $candidateProfileId = $user?->candidateProfile?->id;
+
+        if ($application->candidate_profile_id !== $candidateProfileId) {
+            return $this->errorResponse('application.unauthorized_action', 403);
         }
 
         $updatedApplication = $this->applicationService->updateStatus(
             $application,
             'withdrawn',
-            'The candidate withdrew the application.'
+            __('application.history_withdrawn')
         );
 
         $updatedApplication->load(['job.company', 'candidateProfile.user', 'histories']);

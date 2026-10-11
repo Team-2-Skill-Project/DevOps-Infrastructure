@@ -6,6 +6,7 @@ use App\Models\JobPost;
 use App\Models\Notification;
 use App\Models\Roadmap;
 use App\Models\RoadmapStep;
+use App\Models\RoadmapTask;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,7 @@ class NotificationService
     }
 
     /** Each invocation creates a reminder; cadence and deduplication belong to the future scheduler. */
-    public function notifyRoadmapReminder(User $candidate, Roadmap $roadmap, ?RoadmapStep $step = null, ?string $locale = null): Notification
+    public function notifyRoadmapReminder(User $candidate, Roadmap $roadmap, RoadmapStep|RoadmapTask|null $step = null, ?string $locale = null): Notification
     {
         return DB::transaction(function () use ($candidate, $roadmap, $step, $locale): Notification {
             $owner = User::query()->whereKey($candidate->getKey())
@@ -45,7 +46,11 @@ class NotificationService
                 ->firstOrFail();
             $data = ['deep_link' => ['type' => 'roadmap', 'id' => $ownedRoadmap->id], 'roadmap_id' => $ownedRoadmap->id];
 
-            if ($step !== null) {
+            if ($step instanceof RoadmapTask) {
+                $ownedTask = $ownedRoadmap->tasks()->whereKey($step->getKey())->firstOrFail();
+                $data['roadmap_step_id'] = $ownedTask->id;
+                $data['roadmap_task_id'] = $ownedTask->id;
+            } elseif ($step !== null) {
                 $ownedStep = $ownedRoadmap->steps()->whereKey($step->getKey())->firstOrFail();
                 $data['roadmap_step_id'] = $ownedStep->id;
             }

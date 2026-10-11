@@ -7,18 +7,16 @@ namespace Database\Factories;
 use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use App\Models\ApplicationStatusHistory;
-use App\Models\ApplicationStatusHistory as ApplicationStatusHistoryModel;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<ApplicationStatusHistoryModel>
- */
+/** @extends Factory<ApplicationStatusHistory> */
 class ApplicationStatusHistoryFactory extends Factory
 {
-    /** @var class-string<ApplicationStatusHistory> @extends \Illuminate\Database\Eloquent\Factories\Factory<ApplicationStatusHistory> */
-    protected $model = ApplicationStatusHistoryModel::class;
+    /** @var class-string<ApplicationStatusHistory> */
+    protected $model = ApplicationStatusHistory::class;
 
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [

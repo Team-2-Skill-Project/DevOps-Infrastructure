@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Ai;
 
 use App\Http\Controllers\Controller;
-use App\Models\CvDocument;
 use App\Services\Ai\CvExtractionService;
+use App\Services\CvService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class CvController extends Controller
 {
-    protected CvExtractionService $cvExtractionService;
-
-    public function __construct(CvExtractionService $cvExtractionService)
-    {
-        $this->cvExtractionService = $cvExtractionService;
-    }
+    public function __construct(
+        protected CvService $cvService,
+        protected CvExtractionService $cvExtractionService,
+    ) {}
 
     public function uploadAndExtract(Request $request): JsonResponse
     {
@@ -23,23 +22,23 @@ class CvController extends Controller
             'cv' => 'required|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
-        $user = $request->user();
+        $profile = $request->user()->candidateProfile;
+
+        if ($profile === null) {
+            return response()->json([
+                'success' => false,
+                'message' => __('cv.candidate_profile_not_found'),
+            ], 422);
+        }
+
+        /** @var UploadedFile $file */
         $file = $request->file('cv');
-
-        $path = $file->store('cvs', 'public');
-
-        $cvDocument = CvDocument::create([
-            'user_id' => $user->id,
-            'file_path' => $path,
-            'file_name' => $file->getClientOriginalName(),
-            'parsing_status' => 'pending',
-        ]);
-
+        $cvDocument = $this->cvService->uploadOrReplaceCv($profile, $file);
         $result = $this->cvExtractionService->extractAndPersist($cvDocument);
 
         return response()->json([
             'success' => true,
-            'message' => __('application.cv_extracted_successfully') ?: 'تم رفع وتحليل السيرة الذاتية بنجاح.',
+            'message' => __('cv.uploaded_success'),
             'data' => $result,
         ]);
     }

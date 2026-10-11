@@ -206,8 +206,8 @@ test('deleting a taxonomy skill removes associations but preserves profiles', fu
 });
 
 test('optional seeders create a complete sample graph and do not duplicate canonical skills', function () {
-    $this->seed(CandidateProfileSeeder::class);
     $this->seed(SkillSeeder::class);
+    $this->seed(CandidateProfileSeeder::class);
 
     $this->assertDatabaseCount('skills', 2);
     $profile = CandidateProfile::query()->sole();

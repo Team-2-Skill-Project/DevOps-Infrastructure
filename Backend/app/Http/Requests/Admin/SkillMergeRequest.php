@@ -17,7 +17,7 @@ class SkillMergeRequest extends FormRequest
         $source = Skill::query()->whereKey($this->route('sourceSkill'))->first();
 
         if (! $source) {
-            throw new HttpResponseException(response()->json(['message' => 'Skill not found.'], 404));
+            throw new HttpResponseException(response()->json(['message' => __('skill.not_found')], 404));
         }
 
         $this->source = $source;
@@ -36,5 +36,19 @@ class SkillMergeRequest extends FormRequest
     public function sourceSkill(): Skill
     {
         return $this->source;
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'target_skill_id.not_in' => __('skill.validation.different_target'),
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('skill.attributes');
     }
 }

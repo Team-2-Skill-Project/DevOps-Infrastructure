@@ -23,7 +23,7 @@ class AiMentorController extends Controller
     {
         $request->validate([
             'question' => 'required|string|max:1000',
-            'job_id' => 'nullable|exists:jobs,id',
+            'job_id' => 'nullable|exists:job_posts,id',
         ]);
 
         $user = $request->user();

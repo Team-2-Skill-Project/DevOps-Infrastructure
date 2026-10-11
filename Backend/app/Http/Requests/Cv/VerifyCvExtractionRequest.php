@@ -33,4 +33,10 @@ class VerifyCvExtractionRequest extends FormRequest
             'experiences.*.description' => ['nullable', 'string'],
         ];
     }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('cv.attributes');
+    }
 }

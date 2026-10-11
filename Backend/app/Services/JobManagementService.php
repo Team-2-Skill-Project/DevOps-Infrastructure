@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\Company;
 use App\Models\JobPost;
 use App\Models\User;
@@ -11,6 +14,18 @@ use Illuminate\Validation\ValidationException;
 
 class JobManagementService
 {
+    public function __construct(private AuditService $audit) {}
+
+    /**
+     * @var list<string>
+     */
+    private const SNAPSHOT_FIELDS = [
+        'company_id', 'title', 'description', 'job_type', 'employment_type', 'work_mode',
+        'experience_level', 'country', 'state', 'city', 'salary_min', 'salary_max',
+        'salary_currency', 'published_at', 'expires_at', 'is_active', 'application_method',
+        'application_url', 'min_years_experience', 'max_years_experience', 'canonical_role',
+    ];
+
     /** @param array<string, mixed> $data */
     public function save(?JobPost $job, array $data, User $actor): JobPost
     {
@@ -28,6 +43,8 @@ class JobManagementService
                 $record = $job
                     ? JobPost::query()->lockForUpdate()->findOrFail($job->id)
                     : new JobPost;
+                $isNew = ! $record->exists;
+                $before = $isNew ? null : $this->snapshot($record);
                 $record->fill($data);
 
                 if (! $record->exists) {
@@ -51,11 +68,31 @@ class JobManagementService
                     $this->syncSkills($record, $preferredSkills, false);
                 }
 
+                $this->audit->record(
+                    $isNew ? AuditAction::JOB_CREATED : AuditAction::JOB_UPDATED,
+                    AuditEntityType::JOB,
+                    (int) $record->getKey(),
+                    AuditSource::ADMIN,
+                    $actor,
+                    $before,
+                    $this->snapshot($record->refresh()),
+                );
+
                 return $record;
             }, 3);
         } catch (UniqueConstraintViolationException) {
             throw ValidationException::withMessages(['external_id' => 'This external job already exists for the selected source.']);
         }
+    }
+
+    /** @return array<string, mixed> */
+    private function snapshot(JobPost $job): array
+    {
+        $snapshot = $job->only(self::SNAPSHOT_FIELDS);
+        $snapshot['required_skill_ids'] = $job->jobSkills()->where('is_required', true)->orderBy('skill_id')->pluck('skill_id')->all();
+        $snapshot['preferred_skill_ids'] = $job->jobSkills()->where('is_required', false)->orderBy('skill_id')->pluck('skill_id')->all();
+
+        return $snapshot;
     }
 
     /** @param list<array{skill_id: int, importance?: int|null, required_level?: string|null}> $skills */

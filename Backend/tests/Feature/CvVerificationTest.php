@@ -3,11 +3,16 @@
 use App\Models\CvExtraction;
 use App\Models\User;
 use App\Services\CvService;
+use Tymon\JWTAuth\Facades\JWTAuth;
+
+beforeEach(function () {
+    config()->set('jwt.secret', str_repeat('test-secret-', 6));
+});
 
 test('cv verification validates input before syncing extracted data', function () {
     $extraction = CvExtraction::factory()->create();
     $originalData = $extraction->extracted_data;
-    $this->actingAs($extraction->cvDocument->candidateProfile->user);
+    $this->withToken(JWTAuth::fromUser($extraction->cvDocument->candidateProfile->user));
 
     $this->postJson("/api/cv/extractions/{$extraction->id}/verify", ['skills' => 'invalid'])
         ->assertUnprocessable()
@@ -19,7 +24,7 @@ test('cv verification validates input before syncing extracted data', function (
 test('cv verification rejects another candidates extraction', function () {
     $extraction = CvExtraction::factory()->create();
     $originalData = $extraction->extracted_data;
-    $this->actingAs(User::factory()->create());
+    $this->withToken(JWTAuth::fromUser(User::factory()->create()));
 
     $this->postJson("/api/cv/extractions/{$extraction->id}/verify", [])
         ->assertForbidden();
@@ -29,11 +34,11 @@ test('cv verification rejects another candidates extraction', function () {
 
 test('cv verification preserves extracted data when saving a verified payload', function (?array $extractedData) {
     $extraction = CvExtraction::factory()->create(['extracted_data' => $extractedData]);
-    $this->actingAs($extraction->cvDocument->candidateProfile->user);
+    $this->withToken(JWTAuth::fromUser($extraction->cvDocument->candidateProfile->user));
 
     $this->postJson("/api/cv/extractions/{$extraction->id}/verify", ['skills' => [], 'experiences' => []])
         ->assertOk()
-        ->assertExactJson(['message' => 'Extracted data verified and synced to profile successfully.']);
+        ->assertExactJson(['status' => 'success', 'message' => 'Extracted data verified and synced to profile successfully.', 'data' => null]);
 
     expect($extraction->fresh()->extracted_data)->toBe([
         ...($extractedData ?? []),

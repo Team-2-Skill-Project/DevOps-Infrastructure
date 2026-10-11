@@ -5,6 +5,7 @@ namespace App\Services\Ai;
 use App\Models\JobPost;
 use App\Models\JobSkill;
 use App\Models\Skill;
+use Illuminate\Support\Str;
 
 class JobRequirementService extends BaseAiService
 {
@@ -25,20 +26,29 @@ class JobRequirementService extends BaseAiService
 
         // حفظ المتطلبات وربطها بالـ Skill Taxonomy
         foreach ($output['skills'] ?? [] as $reqSkill) {
-            $skill = Skill::firstOrCreate(['name' => $reqSkill['canonical_name']]);
+            $name = trim((string) ($reqSkill['canonical_name'] ?? $reqSkill['name'] ?? ''));
+
+            if ($name === '') {
+                continue;
+            }
+
+            $skill = Skill::firstOrCreate(
+                ['normalized_name' => Str::lower($name)],
+                ['name' => $name],
+            );
 
             JobSkill::updateOrCreate(
-                ['job_id' => $job->id, 'skill_id' => $skill->id],
+                ['job_post_id' => $job->id, 'skill_id' => $skill->id],
                 [
-                    'type' => $reqSkill['type'], // required أو preferred
-                    'confidence_score' => $reqSkill['confidence'] ?? 1.0,
+                    'is_required' => ($reqSkill['type'] ?? 'required') === 'required',
+                    'importance' => isset($reqSkill['importance']) ? (int) $reqSkill['importance'] : null,
+                    'required_level' => $reqSkill['required_level'] ?? $reqSkill['level'] ?? null,
                 ]
             );
         }
 
-        // تحديث معلومات الوظيفة الأساسية (Role Family, Seniority)
         $job->update([
-            'role_family' => $output['role_family'] ?? null,
+            'canonical_role' => $output['role_family'] ?? $output['canonical_role'] ?? null,
             'experience_level' => $output['seniority'] ?? 'entry_level',
         ]);
     }

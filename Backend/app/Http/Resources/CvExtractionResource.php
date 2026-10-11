@@ -6,7 +6,11 @@ use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 
 class CvExtractionResource extends JsonApiResource
 {
-    /** @var array<string> */
+    /**
+     * The resource's attributes.
+     *
+     * @var list<string>
+     */
     public array $attributes = [
         'attempt_number',
         'status',
@@ -22,7 +26,11 @@ class CvExtractionResource extends JsonApiResource
         'updated_at',
     ];
 
-    /** @var array<string> */
+    /**
+     * The resource's relationships.
+     *
+     * @var list<string>
+     */
     public array $relationships = [
         'cvDocument',
     ];

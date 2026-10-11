@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\RawJob;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -10,7 +13,7 @@ use InvalidArgumentException;
 
 class JobNormalizationService
 {
-    public function __construct(private RawJobDataSanitizer $sanitizer) {}
+    public function __construct(private RawJobDataSanitizer $sanitizer, private AuditService $audit) {}
 
     public function normalize(RawJob $rawJob): RawJob
     {
@@ -24,6 +27,11 @@ class JobNormalizationService
                 throw ValidationException::withMessages(['normalization_status' => __('raw_jobs.normalization_already_finalized')]);
             }
 
+            $context = [
+                'job_source_id' => $record->job_source_id,
+                'ingestion_run_id' => $record->ingestion_run_id,
+            ];
+
             try {
                 $normalized = $this->buildNormalizedData($record->extracted_data ?? []);
             } catch (ValidationException|InvalidArgumentException) {
@@ -35,6 +43,17 @@ class JobNormalizationService
                     'normalized_at' => null,
                 ]);
 
+                $this->audit->record(
+                    AuditAction::JOB_NORMALIZATION_FAILED,
+                    AuditEntityType::RAW_JOB,
+                    (int) $record->getKey(),
+                    AuditSource::INGESTION,
+                    $this->audit->currentActor(),
+                    ['normalization_status' => RawJob::NORMALIZATION_PENDING],
+                    ['normalization_status' => RawJob::NORMALIZATION_FAILED],
+                    [...$context, 'error_code' => 'invalid_data'],
+                );
+
                 return $record;
             }
 
@@ -45,6 +64,17 @@ class JobNormalizationService
                 'normalized_data' => $normalized,
                 'normalized_at' => now(),
             ]);
+
+            $this->audit->record(
+                AuditAction::JOB_NORMALIZED,
+                AuditEntityType::RAW_JOB,
+                (int) $record->getKey(),
+                AuditSource::INGESTION,
+                $this->audit->currentActor(),
+                ['normalization_status' => RawJob::NORMALIZATION_PENDING],
+                ['normalization_status' => RawJob::NORMALIZATION_NORMALIZED],
+                [...$context, 'matched_skill_count' => count($normalized['skills'] ?? [])],
+            );
 
             return $record;
         });

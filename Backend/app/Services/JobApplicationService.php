@@ -3,14 +3,20 @@
 namespace App\Services;
 
 use App\Enums\ApplicationStatus;
+use App\Enums\AuditAction;
+use App\Enums\AuditEntityType;
+use App\Enums\AuditSource;
 use App\Models\Application;
 use App\Models\ApplicationStatusHistory;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class JobApplicationService
 {
-    /** @var array<string, array<int, string>> */
+    public function __construct(private AuditService $audit) {}
+
+    /** @var array<string, list<string>> */
     protected array $allowedTransitions = [
         'applied' => ['in_review', 'withdrawn', 'rejected'],
         'in_review' => ['interview', 'rejected', 'offer', 'withdrawn'],
@@ -22,12 +28,10 @@ class JobApplicationService
 
     /**
      * Create a new job application and log the initial status in the history table.
+     *
+     * @param  array<string, mixed>  $data
      */
-    /**
-     * @param  int|string  $candidateProfileId
-     * @param  array<string,mixed>  $data
-     */
-    public function createApplication($candidateProfileId, array $data): Application
+    public function createApplication(int $candidateProfileId, array $data): Application
     {
         return DB::transaction(function () use ($candidateProfileId, $data) {
             $application = Application::create([
@@ -37,14 +41,25 @@ class JobApplicationService
                 'cover_letter' => $data['cover_letter'] ?? null,
             ]);
 
-            // add a new record to the ApplicationStatusHistory table
             ApplicationStatusHistory::create([
                 'application_id' => $application->id,
                 'changed_by' => auth()->id(),
                 'old_status' => null,
                 'new_status' => ApplicationStatus::APPLIED->value,
-                'notes' => __('application.history_created', [], app()->getLocale()),
+                'notes' => __('application.history_created'),
             ]);
+
+            $actor = $this->audit->currentActor();
+            $this->audit->record(
+                AuditAction::APPLICATION_CREATED,
+                AuditEntityType::APPLICATION,
+                (int) $application->getKey(),
+                $this->sourceFor($actor),
+                $actor,
+                null,
+                ['status' => ApplicationStatus::APPLIED->value],
+                ['job_id' => $application->job_id, 'candidate_profile_id' => $candidateProfileId],
+            );
 
             return $application;
         });
@@ -55,15 +70,14 @@ class JobApplicationService
      */
     public function updateStatus(Application $application, string $newStatus, ?string $notes = null): Application
     {
-        $currentStatusValue = (string) $application->getAttribute('status');
+        $currentStatusValue = $application->status->value;
 
-        // Check if the transition is allowed
-        if (! in_array($newStatus, $this->allowedTransitions[$currentStatusValue] ?? [])) {
+        if (! in_array($newStatus, $this->allowedTransitions[$currentStatusValue] ?? [], true)) {
             throw ValidationException::withMessages([
                 'status' => __('application.invalid_transition', [
                     'from' => $currentStatusValue,
                     'to' => $newStatus,
-                ]) ?: "It is not possible to transition from the state ({$currentStatusValue}) To state ({$newStatus}).",
+                ]),
             ]);
         }
 
@@ -72,7 +86,6 @@ class JobApplicationService
                 'status' => $newStatus,
             ]);
 
-            // add a new record to the ApplicationStatusHistory table
             ApplicationStatusHistory::create([
                 'application_id' => $application->id,
                 'changed_by' => auth()->id(),
@@ -81,7 +94,28 @@ class JobApplicationService
                 'notes' => $notes ?? __('application.history_updated'),
             ]);
 
+            $actor = $this->audit->currentActor();
+            $this->audit->record(
+                AuditAction::APPLICATION_STATUS_CHANGED,
+                AuditEntityType::APPLICATION,
+                (int) $application->getKey(),
+                $this->sourceFor($actor),
+                $actor,
+                ['status' => $currentStatusValue],
+                ['status' => $newStatus],
+                $notes === null ? null : ['notes' => mb_substr($notes, 0, 500)],
+            );
+
             return $application;
         });
+    }
+
+    private function sourceFor(?User $actor): AuditSource
+    {
+        if ($actor !== null && in_array($actor->role, ['admin', 'super_admin'], true)) {
+            return AuditSource::ADMIN;
+        }
+
+        return AuditSource::CANDIDATE;
     }
 }

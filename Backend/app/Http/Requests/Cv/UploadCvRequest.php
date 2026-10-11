@@ -22,10 +22,16 @@ class UploadCvRequest extends FormRequest
                 'max:5120',
                 function ($attribute, $value, $fail) {
                     if ($value->getSize() === 0) {
-                        $fail('The uploaded file is empty and contains no data.');
+                        $fail(__('cv.validation.empty_file'));
                     }
                 },
             ],
         ];
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('cv.attributes');
     }
 }

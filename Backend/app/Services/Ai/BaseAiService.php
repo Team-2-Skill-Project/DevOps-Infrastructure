@@ -20,11 +20,10 @@ class BaseAiService
     }
 
     /**
-     * إرسال طلب موحد للـ AI مع تتبع الـ Metadata
-     */
-    /**
-     * @param  array<string,mixed>  $payload
-     * @return array<string,mixed>
+     * إرسال طلب موحد للـ AI مع تتبع الـ Metadata.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
      */
     protected function sendRequest(string $endpoint, array $payload): array
     {
@@ -40,15 +39,20 @@ class BaseAiService
                 ]);
 
             if ($response->failed()) {
-                Log::error("AI Service Error [{$endpoint}]: ".$response->body());
+                Log::error("AI Service Error [{$endpoint}]: ".$response->status());
                 throw ValidationException::withMessages([
-                    'ai' => __('ai.service_error') ?: 'حدث خطأ أثناء معالجة الذكاء الاصطناعي، يجيب المحاولة لاحقاً.',
+                    'ai' => __('ai.service_error'),
                 ]);
             }
 
             $result = $response->json();
 
-            // التحقق من توفر الـ Success والـ Confidence في الاستجابة الموحدة
+            if (! is_array($result)) {
+                throw ValidationException::withMessages([
+                    'ai' => __('ai.invalid_response'),
+                ]);
+            }
+
             return [
                 'success' => $result['success'] ?? true,
                 'output' => $result['output'] ?? [],
@@ -56,10 +60,12 @@ class BaseAiService
                 'error' => $result['error'] ?? null,
             ];
 
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
             Log::error('AI Connection Exception: '.$e->getMessage());
             throw ValidationException::withMessages([
-                'ai' => __('ai.connection_failed') ?: 'تعذر الاتصال بخدمة الذكاء الاصطناعي.',
+                'ai' => __('ai.connection_failed'),
             ]);
         }
     }

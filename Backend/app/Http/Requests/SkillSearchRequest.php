@@ -25,4 +25,10 @@ class SkillSearchRequest extends FormRequest
     {
         return ['q' => ['required', 'string', 'min:1', 'max:255']];
     }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('skill.attributes');
+    }
 }

@@ -33,4 +33,18 @@ class CompanyMergeRequest extends FormRequest
             ],
         ];
     }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'target_company_id.not_in' => __('company.validation.different_target'),
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return trans('company.attributes');
+    }
 }

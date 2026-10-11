@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CvExtractionStatus;
 use App\Models\CandidateProfile;
 use App\Models\CvDocument;
 use App\Models\CvExtraction;
@@ -44,7 +45,7 @@ test('a cv document can have multiple extraction attempts', function () {
     $successfulAttempt = CvExtraction::factory()->create([
         'cv_document_id' => $cv->id,
         'attempt_number' => 2,
-        'status' => 'completed',
+        'status' => CvExtractionStatus::SUCCESS,
         'extracted_data' => [
             'skills' => ['PHP', 'Laravel'],
         ],

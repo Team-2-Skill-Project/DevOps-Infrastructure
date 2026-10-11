@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Ai;
 
-use App\Models\CandidateProfile;
+use App\Enums\CvExtractionStatus;
+use App\Enums\CvParsingStatus;
 use App\Models\CvDocument;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class CvExtractionService extends BaseAiService
 {
@@ -18,47 +22,96 @@ class CvExtractionService extends BaseAiService
      */
     public function extractAndPersist(CvDocument $cvDocument): array
     {
-        // 1. تجهيز الـ Request Contract
-        /** @var CvDocument $cvDocument */
+        $cvDocument->loadMissing('candidateProfile');
+        $profile = $cvDocument->candidateProfile;
+
+        if ($profile === null) {
+            throw ValidationException::withMessages([
+                'cv' => __('cv.candidate_profile_not_found'),
+            ]);
+        }
+
         $payload = [
-            'candidate_id' => $cvDocument->user_id,
+            'candidate_id' => $profile->user_id,
+            'candidate_profile_id' => $profile->id,
             'cv_version_id' => $cvDocument->id,
-            'file_path' => storage_path("app/{$cvDocument->file_path}"),
-            'raw_text' => $cvDocument->raw_extracted_text,
+            'file_path' => Storage::disk($cvDocument->storage_disk)->path($cvDocument->storage_path),
+            'raw_text' => null,
         ];
 
-        // 2. استدعاء الـ AI Service
-        $response = $this->sendRequest('cv/extract', $payload);
+        $startedAt = now();
 
-        // 3. تخزين النتائج المهيكلة (Persist Structured CV Output & Confidence)
-        return DB::transaction(function () use ($cvDocument, $response) {
+        try {
+            $response = $this->sendRequest('cv/extract', $payload);
+        } catch (Throwable $exception) {
+            $this->persistFailure($cvDocument, $startedAt);
+
+            throw $exception;
+        }
+
+        $output = $response['output'] ?? [];
+
+        if (! is_array($output)) {
+            throw ValidationException::withMessages([
+                'ai' => __('ai.invalid_response'),
+            ]);
+        }
+
+        $confidence = $response['confidence'] ?? null;
+
+        if (! is_numeric($confidence)) {
+            throw ValidationException::withMessages([
+                'ai' => __('ai.invalid_response'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($cvDocument, $response, $startedAt): array {
             $output = $response['output'];
-
-            // تحديث حالة وثيقة الـ CV
-            $cvDocument->update([
-                'parsing_status' => 'completed',
-                'raw_extracted_text' => json_encode($output, JSON_UNESCAPED_UNICODE),
+            $confidence = (float) $response['confidence'];
+            $extraction = $cvDocument->extractions()->create([
+                'attempt_number' => ((int) $cvDocument->extractions()->max('attempt_number')) + 1,
+                'status' => CvExtractionStatus::SUCCESS,
+                'provider' => (string) config('services.ai.provider', 'ai'),
+                'model' => is_string($output['model'] ?? null) ? $output['model'] : null,
+                'parser_version' => is_string($output['parser_version'] ?? null) ? $output['parser_version'] : null,
+                'raw_text' => is_string($output['raw_text'] ?? null) ? $output['raw_text'] : null,
+                'extracted_data' => $output,
+                'confidence_score' => $confidence,
+                'started_at' => $startedAt,
+                'completed_at' => now(),
             ]);
 
-            // تحديث بروفايل المرشح بالبيانات المستخرجة والـ Confidence
-            $profile = CandidateProfile::updateOrCreate(
-                ['user_id' => $cvDocument->user_id],
-                [
-                    'full_name' => $output['full_name'] ?? null,
-                    'headline' => $output['headline'] ?? null,
-                    'target_role' => $output['target_role'] ?? null,
-                    // حفظ نسبة الثقة أو إرسالها لطابور مراجعة الأدمن لو كانت أقل من المعيار
-                ]
-            );
-
-            // حفظ المهارات المستخرجة مع الـ Evidence والـ Confidence في جدول candidate_skills
-            // ... (يتم حفظها هنا بدقة)
+            $cvDocument->update([
+                'status' => CvParsingStatus::COMPLETED,
+                'processed_at' => now(),
+                'failure_reason' => null,
+            ]);
 
             return [
-                'profile' => $profile,
-                'confidence' => $response['confidence'],
+                'profile' => $cvDocument->candidateProfile,
+                'confidence' => $confidence,
                 'evidence' => $output['evidence'] ?? [],
+                'extraction' => $extraction,
             ];
+        });
+    }
+
+    private function persistFailure(CvDocument $cvDocument, \DateTimeInterface $startedAt): void
+    {
+        DB::transaction(function () use ($cvDocument, $startedAt): void {
+            $cvDocument->extractions()->create([
+                'attempt_number' => ((int) $cvDocument->extractions()->max('attempt_number')) + 1,
+                'status' => CvExtractionStatus::FAILED,
+                'provider' => (string) config('services.ai.provider', 'ai'),
+                'error_message' => mb_substr(__('ai.processing_failed'), 0, 1000),
+                'started_at' => $startedAt,
+                'completed_at' => now(),
+            ]);
+
+            $cvDocument->update([
+                'status' => CvParsingStatus::FAILED,
+                'failure_reason' => mb_substr(__('ai.processing_failed'), 0, 1000),
+            ]);
         });
     }
 }

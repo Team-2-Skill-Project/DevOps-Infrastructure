@@ -28,13 +28,17 @@ class ApplicationStatusHistory extends Model
         'new_status' => ApplicationStatus::class,
     ];
 
-    /** @return BelongsTo<Application, $this> */
+    /**
+     * @return BelongsTo<Application, $this>
+     */
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class, 'application_id');
     }
 
-    /** @return BelongsTo<User, $this> */
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function changer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by');
