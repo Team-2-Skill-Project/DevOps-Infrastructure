@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\EmailOtp;
 use App\Models\User;
+use App\Services\AuthTokenService;
 use App\Services\EmailOtpService;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +24,7 @@ class AuthController extends Controller
         return response()->json(['user' => $request->user('api')]);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, AuthTokenService $authTokenService): JsonResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -44,10 +45,14 @@ class AuthController extends Controller
             return response()->json(['message' => __('auth.email_not_verified')], 403);
         }
 
+        if (! (bool) $user->is_active) {
+            return response()->json(['message' => __('auth.account_inactive')], 403);
+        }
+
+        $tokens = $authTokenService->issue($user);
+
         return response()->json([
-            'access_token' => $guard->login($user),
-            'token_type' => 'bearer',
-            'expires_in' => $guard->factory()->getTTL() * 60,
+            ...$tokens,
             'user' => $user,
         ]);
     }
@@ -78,14 +83,14 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function verifyEmailOtp(Request $request): JsonResponse
+    public function verifyEmailOtp(Request $request, AuthTokenService $authTokenService): JsonResponse
     {
         $validated = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'otp' => ['required', 'string', 'regex:/^[0-9]{6}$/'],
         ]);
 
-        return DB::transaction(function () use ($validated): JsonResponse {
+        $result = DB::transaction(function () use ($validated): User|JsonResponse {
             $user = User::whereRaw('LOWER(email) = ?', [Str::lower($validated['email'])])->lockForUpdate()->first();
             $otp = $user ? EmailOtp::where('user_id', $user->id)->where('email', $user->email)
                 ->where('purpose', EmailOtp::EMAIL_VERIFICATION)->lockForUpdate()->first() : null;
@@ -98,6 +103,10 @@ class AuthController extends Controller
                 return response()->json(['message' => __('auth.too_many_invalid_attempts')], 429);
             }
 
+            if (! (bool) $user->is_active) {
+                return response()->json(['message' => __('auth.account_inactive')], 403);
+            }
+
             if (! Hash::check($validated['otp'], $otp->code_hash)) {
                 $otp->increment('attempts');
 
@@ -108,8 +117,47 @@ class AuthController extends Controller
             $otp->delete();
             event(new Verified($user));
 
-            return response()->json(['message' => __('auth.email_verified'), 'user' => $user]);
+            return $user;
         });
+
+        if ($result instanceof JsonResponse) {
+            return $result;
+        }
+
+        return response()->json([
+            'message' => __('auth.email_verified'),
+            ...$authTokenService->issue($result),
+            'user' => $result,
+        ]);
+    }
+
+    public function refresh(Request $request, AuthTokenService $authTokenService): JsonResponse
+    {
+        $validated = $request->validate([
+            'refresh_token' => ['required', 'string', 'max:256'],
+        ]);
+
+        $tokens = $authTokenService->rotate($validated['refresh_token']);
+
+        if ($tokens === null) {
+            return response()->json(['message' => __('auth.unauthenticated')], 401);
+        }
+
+        return response()->json($tokens);
+    }
+
+    public function logout(Request $request, AuthTokenService $authTokenService): JsonResponse
+    {
+        $validated = $request->validate([
+            'refresh_token' => ['sometimes', 'nullable', 'string', 'max:256'],
+        ]);
+
+        /** @var User $user */
+        $user = $request->user('api');
+        $authTokenService->revokeForUser($user, $validated['refresh_token'] ?? null);
+        Auth::guard('api')->logout();
+
+        return response()->json(['message' => __('auth.logout_successful')]);
     }
 
     public function resendEmailOtp(Request $request, EmailOtpService $emailOtpService): JsonResponse

@@ -8,9 +8,8 @@ beforeEach(function () {
     config()->set('jwt.secret', str_repeat('test-secret-', 6));
 });
 
-test('verified users receive a JWT with the configured lifetime without a web session', function (int $ttl) {
+test('verified users receive a 15-minute JWT without a web session', function () {
     $this->freezeSecond();
-    config()->set('jwt.ttl', $ttl);
     $user = User::factory()->withTwoFactor()->create(['phone' => null]);
     Mail::fake();
 
@@ -22,7 +21,7 @@ test('verified users receive a JWT with the configured lifetime without a web se
     $response->assertOk()
         ->assertJsonStructure(['access_token', 'token_type', 'expires_in', 'user'])
         ->assertJsonPath('token_type', 'bearer')
-        ->assertJsonPath('expires_in', $ttl * 60)
+        ->assertJsonPath('expires_in', 900)
         ->assertJsonPath('user.id', $user->id)
         ->assertJsonPath('user.email', $user->email)
         ->assertJsonMissingPath('user.password')
@@ -36,9 +35,9 @@ test('verified users receive a JWT with the configured lifetime without a web se
     $guard = Auth::guard('api')->setToken($response->json('access_token'));
 
     expect($guard->user()->id)->toBe($user->id);
-    expect($guard->payload()->get('exp'))->toBe(now()->addMinutes($ttl)->timestamp);
+    expect($guard->payload()->get('exp'))->toBe(now()->addMinutes(15)->timestamp);
     $this->assertGuest('web');
-})->with(['one hour' => 60, 'fifteen minutes' => 15]);
+});
 
 test('API login rejects invalid credentials with 401', function (string $email, string $password) {
     User::factory()->create(['email' => 'user@example.com']);

@@ -8,6 +8,7 @@ return [
     'too_many_requests' => 'Too Many Attempts.',
     'invalid_credentials' => 'Invalid credentials.',
     'email_not_verified' => 'Email address is not verified.',
+    'account_inactive' => 'Your account is inactive.',
     'registration_email_failed' => 'Unable to send the email verification code. Please try registering again shortly.',
     'registration_successful' => 'Registration successful. A verification code has been sent to your email.',
     'too_many_invalid_attempts' => 'Too many invalid attempts. Request a new code.',
@@ -22,6 +23,7 @@ return [
     'reset_code_verified' => 'Code verified. You may now reset your password.',
     'invalid_reset_session' => 'The password reset session is invalid or expired. Request a new code.',
     'password_reset_successful' => 'Password reset successfully. Please log in.',
+    'logout_successful' => 'Logged out successfully.',
     'google' => [
         'unavailable' => 'Google sign-in is unavailable. Please try another sign-in method.',
         'invalid_session' => 'Your Google sign-in session expired or was invalid. Please try again.',
