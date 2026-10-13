@@ -14,20 +14,15 @@ RUN composer install \
 
 FROM php:8.5-cli-alpine
 
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
 RUN apk add --no-cache \
     bash \
     curl \
     git \
-    libpq-dev \
-    libzip-dev \
-    icu-dev \
     tini \
     linux-headers \
-    $PHPIZE_DEPS \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && docker-php-ext-install \
-        pdo \
+    && install-php-extensions \
         pdo_mysql \
         pdo_pgsql \
         pgsql \
@@ -35,8 +30,7 @@ RUN apk add --no-cache \
         pcntl \
         intl \
         zip \
-        opcache \
-    && apk del $PHPIZE_DEPS 
+        redis 
 
 RUN addgroup -g 10001 appgroup && \
     adduser -u 10001 -G appgroup -s /bin/sh -D appuser 
