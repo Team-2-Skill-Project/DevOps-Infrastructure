@@ -141,10 +141,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      #- name: Run tests
-       # run: python -m pytest tests/ -v --tb=short
-       # env:
-        #  LLM_API_KEY: "dummy-key-for-ci-testing"
-         # GEMINI_API_KEY: "dummy-key-for-ci-testing"
-          #GROQ_API_KEY: "dummy-key-for-ci-testing"
+      - name: Run tests
+        run: python -m pytest tests/ -v --tb=short
+        env:
+          ENVIRONMENT: test
+          DATABASE_URL: sqlite://
+          REDIS_URL: redis://localhost:6379/0
+          LLM_API_KEY: dummy-ci-key
+          GEMINI_API_KEY: dummy-ci-key
+          GROQ_API_KEY: dummy-ci-key
