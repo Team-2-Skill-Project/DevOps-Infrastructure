@@ -144,3 +144,30 @@ Route::middleware(['auth:api', SetLocale::class, EnsureActiveCandidate::class])-
     Route::get('/jobs/{job}/match-report', [JobMatchController::class, 'getMatchReport']);
     Route::post('/mentor/ask', [AiMentorController::class, 'ask']);
 });
+
+Route::get('/health', function () {
+    $dbHealthy = false;
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbHealthy = true;
+    } catch (\Throwable) {
+        $dbHealthy = false;
+    }
+
+    $redisHealthy = false;
+    try {
+        $redisHealthy = (bool) \Illuminate\Support\Facades\Redis::ping();
+    } catch (\Throwable) {
+        $redisHealthy = false;
+    }
+
+    $status = ($dbHealthy && $redisHealthy) ? 200 : 503;
+
+    return response()->json([
+        'status' => $status === 200 ? 'healthy' : 'degraded',
+        'database' => $dbHealthy ? 'connected' : 'disconnected',
+        'redis' => $redisHealthy ? 'connected' : 'disconnected',
+        'timestamp' => now()->toIso8601String(),
+    ], $status);
+});
+
