@@ -57,11 +57,11 @@ This workspace is intrinsically linked to Omar's Obsidian Knowledge Base:
 ### Current Active Tasks (Week 2 / Sessions 4–6)
 * [x] Task 2.1: Docker CE 29.8 and Compose plugin operational on both host and VM.
 * [x] Task 2.2: Unprivileged Docker execution verified.
-* [ ] **Task 2.3: Author `Dockerfile` for Backend** (multi-stage: Composer 2.7 builder $\to$ PHP 8.3 CLI/FPM alpine runner).
-* [ ] **Task 2.4: Enforce security directives:** unprivileged user `UID 10001:10001`, `tini` as PID 1, and scoped permissions on `storage/` and `bootstrap/cache/`.
+* [x] **Task 2.3: Author `Dockerfile` for Backend** (multi-stage: Node.js 22 alpine builder $\to$ Node.js 22 alpine runner).
+* [x] **Task 2.4: Enforce security directives:** unprivileged user `UID 10001:10001`, `tini` as PID 1, and scoped permissions on `storage/`, `logs/`, and `tmp/`.
 * [ ] **Task 2.5: Gitleaks integration:** Install `.pre-commit-config.yaml` and `.gitleaks.toml`.
-* [ ] **Task 2.6: Author `.env.example`** with container network hostnames (`DB_HOST=postgres`, `REDIS_HOST=redis`).
-* [ ] **Task 2.8: Author local `docker-compose.yml`** orchestrating Backend, PostgreSQL 16, and Redis 7 on isolated bridge network with health checks.
+* [x] **Task 2.6: Author `.env.example`** with container network hostnames (`DB_HOST=mysql`, `PORT=8000`).
+* [x] **Task 2.8: Author local `docker-compose.yml`** orchestrating Backend (Node.js), MySQL 8.0, and isolated bridge network with health checks.
 
 ---
 
@@ -70,11 +70,11 @@ This workspace is intrinsically linked to Omar's Obsidian Knowledge Base:
 ```
 ~/Projects/SkillMatch/
 ├── AGENTS.md               # [THIS FILE] Multi-agent orientation & stage tracker
-├── Backend/                # Laravel 11 / PHP 8.3 (Port 8000)
-│   ├── composer.json       # Dependencies: Sanctum, Fortify, JWT, Pest, Inertia
-│   ├── app/                # Core domain, JobDeduplicationService, JobFingerprintService
-│   ├── database/           # 45+ migrations, seeders
-│   └── routes/             # api.php, web.php, cv.php
+├── Backend/                # Node.js 22 / Express / Sequelize (Port 8000)
+│   ├── package.json        # Dependencies: Express, Sequelize, MySQL2, Jest
+│   ├── src/                # Controllers, models, migrations, routes, services
+│   ├── tests/              # Jest unit & integration test suites
+│   └── server.js           # Application entrypoint
 ├── AI/                     # Python 3.11 / FastAPI (Port 8001)
 │   ├── requirements.txt    # FastAPI, Uvicorn, Qdrant client, Gemini, PyPDF, python-docx
 │   ├── src/main.py         # FastAPI application entrypoint
@@ -94,11 +94,11 @@ Related Infrastructure Repository:
 ## 5. Non-Negotiable Engineering Directives for Agents
 
 1. **Stack Ground Truth:**
-   * Backend is **PHP 8.3 / Laravel 11** with Composer. Do NOT generate Python or Node code for the Backend.
+   * Backend is **Node.js 22 / Express 5 / Sequelize 6** with MySQL2.
    * AI Service is **Python 3.11 / FastAPI**.
    * Frontend is **React 19 / Vite 6 / Tailwind CSS 4**.
-   * Database is **PostgreSQL 16 Alpine** (`pdo_pgsql`).
-   * Queue & Cache is **Redis 7 Alpine** (`phpredis`).
+   * Database is **MySQL 8.0** for Backend (`mysql2`). (PostgreSQL 16 Alpine available for AI / secondary storage).
+   * Queue & Cache is in-app worker/scheduler & Redis 7 Alpine.
 2. **Container Security Standards:**
    * Always use multi-stage builds.
    * Never run containers as root. Use `USER 10001:10001` (`appuser:appgroup`).

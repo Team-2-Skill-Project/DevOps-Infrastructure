@@ -1,55 +1,54 @@
-FROM composer:2.8 AS vendor
+# ─── Stage 1: Build & Dependency Resolution ───
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-COPY composer.json composer.lock ./ 
+# Install build dependencies if native addons need compiling
+RUN apk add --no-cache python3 make g++
 
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --prefer-dist \
-    --ignore-platform-reqs \
-    --optimize-autoloader \
-    --no-scripts 
+# Copy dependency manifests
+COPY package.json package-lock.json ./
 
-FROM php:8.5-cli-alpine
+# Install dependencies and prune devDependencies for production
+RUN npm ci && npm prune --production
 
-COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+# ─── Stage 2: Hardened Production Runtime ───
+FROM node:22-alpine AS runner
 
-RUN apk add --no-cache \
-    bash \
-    curl \
-    git \
-    tini \
-    linux-headers \
-    && install-php-extensions \
-        pdo_mysql \
-        pdo_pgsql \
-        pgsql \
-        bcmath \
-        pcntl \
-        intl \
-        zip \
-        redis 
+# Install tini for zombie PID reaping and curl for container health probes
+RUN apk add --no-cache tini curl
 
-RUN addgroup -g 10001 appgroup && \
-    adduser -u 10001 -G appgroup -s /bin/sh -D appuser 
+WORKDIR /app
 
-WORKDIR /var/www/html 
+ENV NODE_ENV=production \
+    PORT=8000
 
-COPY --chown=appuser:appgroup . .
-COPY --from=vendor --chown=appuser:appgroup /app/vendor ./vendor
+# Create unprivileged application service user & group (UID/GID 10001)
+RUN addgroup -g 10001 -S appgroup && \
+    adduser -u 10001 -S appuser -G appgroup
 
-RUN mkdir -p storage/framework/cache/data \
-             storage/framework/sessions \
-             storage/framework/views \
-             storage/logs \
-             bootstrap/cache && \
-    chown -R appuser:appgroup storage bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache 
-    
-USER appuser 
+# Copy production node_modules from builder
+COPY --from=builder --chown=10001:10001 /app/node_modules ./node_modules
+
+# Copy application source code and configurations
+COPY --chown=10001:10001 package.json package-lock.json ./
+COPY --chown=10001:10001 .sequelizerc server.js ./
+COPY --chown=10001:10001 src/ ./src/
+COPY --chown=10001:10001 scripts/ ./scripts/
+
+# Create runtime directories for storage, logs, and temp files with scoped permissions
+RUN mkdir -p storage logs tmp && \
+    chown -R 10001:10001 storage logs tmp && \
+    chmod -R 750 storage logs tmp
+
+# Switch to non-root user
+USER 10001:10001
+
 EXPOSE 8000
 
-ENTRYPOINT ["/sbin/tini", "--"] 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Container health probe validating the Express /api/health endpoint
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "src/server.js"]

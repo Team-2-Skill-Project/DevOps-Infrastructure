@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  # ─── 1. Backend Tests (PHP 8.4 / Laravel) ───
+  # ─── 1. Backend Tests (Node.js 22 / Express / Sequelize / MySQL) ───
   backend-tests:
     name: Backend Tests
     runs-on: ubuntu-latest
@@ -20,41 +20,22 @@ jobs:
         working-directory: Backend
 
     services:
-      postgres:
-        image: postgres:16-alpine
+      mysql:
+        image: mysql:8.0
         env:
-          POSTGRES_DB: skillmatch_test
-          POSTGRES_USER: skillmatch
-          POSTGRES_PASSWORD: secret
+          MYSQL_ROOT_PASSWORD: secret
+          MYSQL_DATABASE: skillmatch_test
         ports:
-          - 5432:5432
+          - 3306:3306
         options: >-
-          --health-cmd="pg_isready -U skillmatch -d skillmatch_test"
+          --health-cmd="mysqladmin ping -h localhost -u root -psecret"
           --health-interval=5s
           --health-timeout=5s
-          --health-retries=5
-
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd="redis-cli ping"
-          --health-interval=5s
-          --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - name: Checkout monorepo
         uses: actions/checkout@v4
-
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          extensions: pdo_pgsql, redis, bcmath, pcntl, intl, zip, opcache
-          tools: composer:v2
-          coverage: none
 
       - name: Setup Node 22
         uses: actions/setup-node@v4
@@ -64,31 +45,30 @@ jobs:
           cache-dependency-path: Backend/package-lock.json
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+        run: npm ci
 
-      - name: Build frontend assets
-        run: |
-          npm ci || npm install
-          npm run build
-
-      - name: Prepare environment
-        run: |
-          cp .env.example .env || true
-          php artisan key:generate --force || true
-          php artisan jwt:secret --force || true
-
-      - name: Run tests
-        run: php artisan test
+      - name: Run database migrations
+        run: npm run migrate:test || true
         env:
-          DB_CONNECTION: pgsql
+          NODE_ENV: test
           DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: skillmatch_test
-          DB_USERNAME: skillmatch
+          DB_PORT: 3306
+          DB_USER: root
           DB_PASSWORD: secret
-          REDIS_HOST: 127.0.0.1
-          REDIS_PORT: 6379
-          JWT_SECRET: "dummy-jwt-secret-key-32-chars-long!!"
+          DB_NAME: skillmatch_test
+          DB_TEST_NAME: skillmatch_test
+
+      - name: Run test suite
+        run: npm test
+        env:
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: secret
+          DB_NAME: skillmatch_test
+          DB_TEST_NAME: skillmatch_test
+          JWT_SECRET: "skillmatch_jwt_super_secret_key_change_in_production_min_32_chars"
 
   # ─── 2. Frontend Build (React 19 / Vite 6) ───
   frontend-tests:
