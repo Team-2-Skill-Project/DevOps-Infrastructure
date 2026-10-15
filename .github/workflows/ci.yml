@@ -70,6 +70,9 @@ jobs:
           DB_TEST_NAME: skillmatch_test
           JWT_SECRET: "skillmatch_jwt_super_secret_key_change_in_production_min_32_chars"
 
+      - name: Verify Docker build
+        run: docker build -t skillmatch-backend:ci .
+
   # ─── 2. Frontend Build (React 19 / Vite 6) ───
   frontend-tests:
     name: Frontend Lint & Build
