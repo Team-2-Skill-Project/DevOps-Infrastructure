@@ -116,8 +116,14 @@ describe('API Documentation & OpenAPI 3.0 Integration Tests', () => {
       const missingEndpoints = [];
 
       for (const route of registeredRoutes) {
-        // Skip docs endpoints
-        if (route.rawPath.startsWith('/docs')) {
+        // Skip docs endpoints and compatibility alias routes (canonically documented under /admin)
+        if (
+          route.rawPath.startsWith('/docs') ||
+          route.rawPath.startsWith('/company') ||
+          route.rawPath.startsWith('/companies') ||
+          route.rawPath.startsWith('/users') ||
+          route.rawPath.startsWith('/user')
+        ) {
           continue;
         }
 

@@ -69,6 +69,9 @@ jobs:
           DB_NAME: skillmatch_test
           DB_TEST_NAME: skillmatch_test
           JWT_SECRET: "skillmatch_jwt_super_secret_key_change_in_production_min_32_chars"
+          AI_SERVICE_BASE_URL: "https://ai-serv5.fastapicloud.dev"
+          AI_SERVICE_SECRET_KEY: "ci_test_secret_key"
+          AI_SERVICE_API_KEY: "ci_test_secret_key"
 
       - name: Verify Docker build
         run: docker build -t skillmatch-backend:ci .
