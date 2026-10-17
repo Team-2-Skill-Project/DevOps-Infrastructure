@@ -117,7 +117,7 @@ describe('Phase 12 - Admin Operations, Moderation & AI Review Queue Tests', () =
     });
 
     pendingReviewItem2 = await db.AiReviewItem.create({
-      entity_type: 'scraped_job',
+      entity_type: 'job_post',
       entity_id: 202,
       source: 'playwright_scraper',
       status: 'pending',
@@ -133,7 +133,7 @@ describe('Phase 12 - Admin Operations, Moderation & AI Review Queue Tests', () =
     });
 
     pendingReviewItem3 = await db.AiReviewItem.create({
-      entity_type: 'job_match',
+      entity_type: 'skill',
       entity_id: 303,
       source: 'ai_matcher',
       status: 'pending',

@@ -119,9 +119,9 @@ describe('Phase 11 - AI Mentor Chat: Context Builder, Conversation Sessions & Hi
       company_id: companyTech.id,
       title: 'Senior Node.js Architect',
       description: 'Senior Node.js architect opening designing distributed systems.',
-      job_type: 'full-time',
+      job_type: 'job',
       work_mode: 'remote',
-      employment_type: 'direct_hire',
+      employment_type: 'full-time',
       experience_level: 'senior',
       status: 'active',
       is_active: true

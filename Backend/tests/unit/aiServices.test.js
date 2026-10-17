@@ -10,8 +10,11 @@ const TemplateRoadmapGenerator = require('../../src/services/templateRoadmapGene
 
 describe('AI Integrated Services Unit Tests', () => {
   beforeAll(() => {
-    process.env.AI_ROADMAP_SERVICE_ENABLED = 'true';
+    process.env.AI_CV_IMPROVER_SERVICE_ENABLED = 'true';
+    process.env.AI_INTERVIEW_COACH_ENABLED = 'true';
     process.env.AI_INTERVIEW_SERVICE_ENABLED = 'true';
+    process.env.AI_ROADMAP_SERVICE_ENABLED = 'true';
+    process.env.AI_MENTOR_SERVICE_ENABLED = 'true';
     process.env.AI_STRATEGY_SERVICE_ENABLED = 'true';
     process.env.AI_MATCH_SERVICE_ENABLED = 'true';
   });

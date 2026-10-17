@@ -120,9 +120,9 @@ describe('Phase 10 - Dynamic Career Roadmaps, Milestones & Progress Tracking', (
       company_id: companyCloud.id,
       title: 'Cloud Solutions Architect',
       description: 'Design and deploy distributed cloud systems using Kubernetes and Terraform.',
-      job_type: 'full-time',
+      job_type: 'job',
       work_mode: 'remote',
-      employment_type: 'direct_hire',
+      employment_type: 'full-time',
       experience_level: 'senior',
       status: 'active',
       is_active: true
