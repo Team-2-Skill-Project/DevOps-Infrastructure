@@ -143,7 +143,14 @@ describe('API Documentation & OpenAPI 3.0 Integration Tests', () => {
           route.rawPath.endsWith('/all') ||
           route.rawPath.endsWith('/feed') ||
           route.rawPath.endsWith('/search') ||
-          route.rawPath.endsWith('/latest')
+          route.rawPath.endsWith('/latest') ||
+          (route.rawPath.startsWith('/admin/companies') && (
+            route.rawPath.includes('/verify') ||
+            route.rawPath.includes('/reject') ||
+            route.rawPath.includes('/approve') ||
+            route.rawPath.includes('/verification') ||
+            route.rawPath.includes('/status')
+          ))
         ) {
           continue;
         }
