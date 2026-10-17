@@ -1,152 +1,183 @@
-    services:
-      postgres:
-        image: postgres:16-alpine
-        container_name: skillmatch-postgres
-        restart: unless-stopped
-        environment:
-          POSTGRES_DB: skillmatch
-          POSTGRES_USER: skillmatch
-          POSTGRES_PASSWORD: secret
-        ports:
-          - "5432:5432"
-        volumes:
-          - postgres_data:/var/lib/postgresql/data
-        healthcheck:
-          test: ["CMD-SHELL", "pg_isready -U skillmatch -d skillmatch"]
-          interval: 5s
-          timeout: 5s
-          retries: 5
-          start_period: 5s
-        networks:
-          - skillmatch-net
-
-      redis:
-        image: redis:7-alpine
-        container_name: skillmatch-redis
-        restart: unless-stopped
-        ports:
-          - "6379:6379"
-        volumes:
-          - redis_data:/data
-        healthcheck:
-          test: ["CMD", "redis-cli", "ping"]
-          interval: 5s
-          timeout: 5s
-          retries: 5
-        networks:
-          - skillmatch-net
-
-      qdrant:
-        image: qdrant/qdrant:v1.13.0
-        container_name: skillmatch-qdrant
-        restart: unless-stopped
-        ports:
-          - "6333:6333"
-          - "6334:6334"
-        volumes:
-          - qdrant_data:/qdrant/storage
-        networks:
-          - skillmatch-net
-
-      mysql:
-        image: mysql:8.0
-        container_name: skillmatch-mysql
-        restart: unless-stopped
-        environment:
-          MYSQL_ROOT_PASSWORD: secret
-          MYSQL_DATABASE: skillmatch
-          MYSQL_USER: skillmatch
-          MYSQL_PASSWORD: secret
-        ports:
-          - "3306:3306"
-        volumes:
-          - mysql_data:/var/lib/mysql
-        healthcheck:
-          test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret"]
-          interval: 5s
-          timeout: 5s
-          retries: 5
-          start_period: 10s
-        networks:
-          - skillmatch-net
-
-      backend:
-        build:
-          context: ./Backend
-          dockerfile: Dockerfile
-        container_name: skillmatch-backend
-        restart: unless-stopped
-        ports:
-          - "8000:8000"
-        environment:
-          - NODE_ENV=development
-          - APP_NAME=SkillMatch
-          - PORT=8000
-          - APP_URL=http://localhost:8000
-          - DB_HOST=mysql
-          - DB_PORT=3306
-          - DB_USER=skillmatch
-          - DB_PASSWORD=secret
-          - DB_NAME=skillmatch
-          - JWT_SECRET=skillmatch_jwt_super_secret_key_change_in_production_min_32_chars
-          - AI_SERVICE_BASE_URL=http://ai:8001
-        depends_on:
-          mysql:
-            condition: service_healthy
-        healthcheck:
-          test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
-          interval: 10s
-          timeout: 5s
-          retries: 3
-          start_period: 10s
-        networks:
-          - skillmatch-net
-
-      ai:
-        build:
-          context: ./AI
-          dockerfile: Dockerfile
-        container_name: skillmatch-ai
-        restart: unless-stopped
-        ports:
-          - "8001:8001"
-        environment:
-          - API_HOST=0.0.0.0
-          - API_PORT=8001
-          - ENVIRONMENT=development
-          - REDIS_URL=redis://redis:6379/0
-          - DATABASE_URL=postgresql+psycopg2://skillmatch:secret@postgres:5432/skillmatch
-        depends_on:
-          redis:
-            condition: service_healthy
-          qdrant:
-            condition: service_started
-        networks:
-          - skillmatch-net
-
-      frontend:
-        build:
-          context: ./Frontend
-          dockerfile: Dockerfile
-        container_name: skillmatch-frontend
-        restart: unless-stopped
-        ports:
-          - "8080:8080"
-        depends_on:
-          - backend
-        networks:
-          - skillmatch-net
-
+services:
+  # ─── 1. Relational Database for AI Microservice (PostgreSQL 16) ───
+  postgres:
+    image: postgres:16-alpine
+    container_name: skillmatch-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: skillmatch
+      POSTGRES_USER: skillmatch
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
     volumes:
-      mysql_data:
-        driver: local
-      postgres_data:
-        driver: local
-      redis_data:
-        driver: local
-      qdrant_data:
-        driver: local
-
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillmatch -d skillmatch"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     networks:
-      skillmatch-net:
-        driver: bridge
+      - skillmatch-net
+
+  # ─── 2. Queue Broker & Cache for AI Microservice (Redis 7) ───
+  redis:
+    image: redis:7-alpine
+    container_name: skillmatch-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - skillmatch-net
+
+  # ─── 3. Vector Database for Semantic Matching (Qdrant) ───
+  qdrant:
+    image: qdrant/qdrant:v1.13.0
+    container_name: skillmatch-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - skillmatch-net
+
+  # ─── 4. Relational Database for Node.js Backend (MySQL 8.0) ───
+  mysql:
+    image: mysql:8.0
+    container_name: skillmatch-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: skillmatch
+      MYSQL_USER: skillmatch
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - skillmatch-net
+
+  # ─── 5. Core API Service (Node.js 22 / Express 5) ───
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: skillmatch-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+      - APP_NAME=SkillMatch
+      - PORT=8000
+      - APP_URL=http://localhost:8000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=skillmatch
+      - DB_PASSWORD=secret
+      - DB_NAME=skillmatch
+      - JWT_SECRET=skillmatch_jwt_super_secret_key_change_in_production_min_32_chars
+      - AI_SERVICE_BASE_URL=http://ai:8001
+      - UPLOAD_MAX_FILE_SIZE_MB=5
+      - STORAGE_PATH=/app/storage
+    volumes:
+      - backend_storage:/app/storage
+      - backend_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - skillmatch-net
+
+  # ─── 6. AI Enrichment & Matching Engine (FastAPI / Python 3.11) ───
+  ai:
+    build:
+      context: ./AI
+      dockerfile: Dockerfile
+    container_name: skillmatch-ai
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8001
+      - ENVIRONMENT=development
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg2://skillmatch:secret@postgres:5432/skillmatch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8001/health\")' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - skillmatch-net
+
+  # ─── 7. Web Client UI (React 19 / Nginx Alpine) ───
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: skillmatch-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - skillmatch-net
+
+volumes:
+  mysql_data:
+    driver: local
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  backend_storage:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  skillmatch-net:
+    driver: bridge

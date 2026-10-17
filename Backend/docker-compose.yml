@@ -1,0 +1,77 @@
+services:
+  # ─── 1. Relational Database (MySQL 8.0) ───
+  mysql:
+    image: mysql:8.0
+    container_name: skillmatch-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: skillmatch
+      MYSQL_USER: skillmatch
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecret"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - backend-net
+
+  # ─── 2. Node.js Core Backend Service ───
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: skillmatch-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=development
+      - APP_NAME=SkillMatch
+      - PORT=8000
+      - APP_URL=http://localhost:8000
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=skillmatch
+      - DB_PASSWORD=secret
+      - DB_NAME=skillmatch
+      - JWT_SECRET=skillmatch_jwt_super_secret_key_change_in_production_min_32_chars
+      - STATIC_OTP_ENABLED=true
+      - STATIC_OTP_CODE=123456
+      - UPLOAD_MAX_FILE_SIZE_MB=5
+      - STORAGE_PATH=/app/storage
+      # Remote AI fallback until local AI container is booted
+      - AI_PROVIDER=remote
+      - AI_SERVICE_BASE_URL=https://ai-serv5.fastapicloud.dev
+    volumes:
+      - backend_storage:/app/storage
+      - backend_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - backend-net
+
+volumes:
+  mysql_data:
+    driver: local
+  backend_storage:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  backend-net:
+    driver: bridge
